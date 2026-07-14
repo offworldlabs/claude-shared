@@ -1,6 +1,6 @@
 ---
 name: setup-repo
-description: Use when setting up a new or blank Offworld Labs repository, or when the user asks to "set up this repo per claude-shared", scaffold a repo to org standards, or add the standard Claude/CI/tooling setup. Scaffolds Claude Code enablement, review workflows, and stack tooling.
+description: Use when setting up a new or blank Offworld Labs repository, or when the user asks to "set up this repo per claude-shared", scaffold a repo to org standards, or add the standard Claude/CI/tooling setup. Scaffolds Claude Code enablement, the Claude review workflows, and stack-specific tooling for the repo.
 ---
 
 # Set up a repo per claude-shared

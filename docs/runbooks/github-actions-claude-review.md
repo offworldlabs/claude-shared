@@ -44,13 +44,19 @@ permissions:
   id-token: write
 ```
 
-The fastest path in a new repo is to skip the broken scaffold entirely and copy
-the known-good templates from this repo:
+The fastest path in a new repo is to skip the broken scaffold entirely and run
+the `core:setup-repo` skill, which installs the corrected workflows. Ask
+Claude:
+
+> set this repo up per `claude-shared`
+
+If you need to copy the workflows manually, they live in the `core` plugin's
+assets and copy as-is into `.github/workflows/` (no leading-dot rename needed):
 
 ```bash
 mkdir -p .github/workflows
-cp path/to/claude-shared/templates/github-workflows/claude-code-review.yml .github/workflows/
-cp path/to/claude-shared/templates/github-workflows/claude.yml            .github/workflows/
+cp path/to/claude-shared/plugins/core/skills/setup-repo/assets/ci/claude-code-review.yml .github/workflows/
+cp path/to/claude-shared/plugins/core/skills/setup-repo/assets/ci/claude.yml            .github/workflows/
 ```
 
 ## Critical gotcha: the fix must land on the default branch first

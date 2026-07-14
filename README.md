@@ -8,7 +8,7 @@ plus **shared reference docs** used across every repo in the organisation.
 
 ## Install
 
-In any repo, add the marketplace and install the plugin:
+Install once per machine, at user scope:
 
 ```
 /plugin marketplace add offworldlabs/claude-shared
@@ -17,15 +17,8 @@ In any repo, add the marketplace and install the plugin:
 
 ## Adopting in a consuming repo
 
-Adoption is driven by Claude Code, not manual copying. Once, per machine, install
-the plugin at user scope:
-
-```
-/plugin marketplace add offworldlabs/claude-shared
-/plugin install core@offworld
-```
-
-Then, in any new repo, start Claude Code and ask:
+Adoption is driven by Claude Code, not manual copying. With `core` installed
+(see Install above), open any new repo, start Claude Code, and ask:
 
 > set this repo up per `claude-shared`
 
