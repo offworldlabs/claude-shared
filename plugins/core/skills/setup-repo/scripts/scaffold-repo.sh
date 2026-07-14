@@ -9,6 +9,11 @@ TARGET="${1:?target dir required}"
 STACK="${2:-none}"
 ASSETS="$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets" && pwd)"
 
+case "$STACK" in
+  python|none) ;;
+  *) echo "unknown stack: $STACK" >&2; exit 2 ;;
+esac
+
 written=()
 skipped=()
 
@@ -47,7 +52,6 @@ case "$STACK" in
     copy "$ASSETS/ci/ci-python.yml"                  "$TARGET/.github/workflows/ci.yml"
     ;;
   none) ;;
-  *) echo "unknown stack: $STACK" >&2; exit 2 ;;
 esac
 
 echo "WRITTEN:"

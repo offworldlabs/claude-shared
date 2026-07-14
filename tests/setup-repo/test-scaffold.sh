@@ -19,10 +19,28 @@ done
 python3 -c "import json; json.load(open('$TMP/.claude/settings.json'))"
 python3 -c "import tomllib; tomllib.load(open('$TMP/pyproject.toml','rb'))"
 
-# non-clobber: second run skips everything and reports it
+# non-clobber: second run skips everything and reports it, leaving files byte-identical
+before="$(shasum "$TMP/pyproject.toml")"
 out="$(bash "$ENGINE" "$TMP" python)"
 echo "$out" | grep -q "SKIPPED" || { echo "expected SKIPPED report" >&2; exit 1; }
 echo "$out" | grep -q "pyproject.toml" || { echo "expected skipped file listed" >&2; exit 1; }
+after="$(shasum "$TMP/pyproject.toml")"
+[ "$before" = "$after" ] || { echo "skipped file was modified" >&2; exit 1; }
+
+# none stack: writes the always-files, omits all python-only files
+TMP_NONE="$(mktemp -d)"
+trap 'rm -rf "$TMP" "$TMP_NONE"' EXIT
+git -C "$TMP_NONE" init -q
+bash "$ENGINE" "$TMP_NONE" none
+for f in .claude/settings.json CLAUDE.md .claude/rules/security.md \
+         .claude/rules/code-style.md .github/workflows/claude.yml \
+         .github/workflows/claude-code-review.yml .editorconfig; do
+  test -e "$TMP_NONE/$f" || { echo "MISSING (none stack): $f" >&2; exit 1; }
+done
+for f in pyproject.toml requirements.txt requirements-dev.txt .gitignore \
+         tests/.gitkeep .github/workflows/ci.yml; do
+  test -e "$TMP_NONE/$f" && { echo "UNEXPECTED (none stack): $f" >&2; exit 1; }
+done
 
 # scaffolded python defaults are internally consistent
 mkdir -p "$TMP/src"
@@ -50,8 +68,11 @@ else
   echo "pytest not installed; skipped"
 fi
 
-# unknown stack exits 2
-if bash "$ENGINE" "$TMP" bogus 2>/dev/null; then
-  echo "expected non-zero exit for unknown stack" >&2; exit 1
-fi
+# unknown stack exits 2 and writes nothing
+BOGUS="$(mktemp -d)"
+trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS"' EXIT
+git -C "$BOGUS" init -q
+set +e; bash "$ENGINE" "$BOGUS" bogus >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -eq 2 ] || { echo "expected exit 2 for unknown stack, got $rc" >&2; exit 1; }
+[ -z "$(ls -A "$BOGUS" | grep -v '^.git$' || true)" ] || { echo "unknown stack wrote files" >&2; exit 1; }
 echo "ALL CHECKS PASSED"
