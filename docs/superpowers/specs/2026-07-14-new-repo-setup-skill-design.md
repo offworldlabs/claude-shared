@@ -129,9 +129,17 @@ Ordered, idempotent, **never silently clobbers**:
    files (e.g. don't overwrite an existing `package.json` — report and let the dev
    reconcile).
 6. **Shared.** Copy `.editorconfig` and the stack `.gitignore`.
-7. **Report.** List every file written/skipped, then a manual follow-up checklist:
-   add the `CLAUDE_CODE_OAUTH_TOKEN` secret, install deps, commit workflows to the
-   default branch, optional branch protection.
+7. **Install.** Run the stack's first install (`pip install -r requirements.txt
+   -r requirements-dev.txt` for python; `npm install` for ts), reporting the
+   command and its result. Skip with a note if the toolchain is unavailable.
+8. **Flesh out `CLAUDE.md`.** After writing the stub, prompt the dev for a
+   one-or-two-line description of what the repo does, then fill in the template's
+   Project Overview / Build & Test / Local Architecture sections from their answer
+   plus what was just scaffolded (stack, test/lint commands). Leave the stub as-is
+   if they skip.
+9. **Report.** List every file written/skipped, then a manual follow-up checklist:
+   add the `CLAUDE_CODE_OAUTH_TOKEN` secret, commit workflows to the default
+   branch, optional branch protection.
 
 ### Idempotency & updates
 Re-running on an existing repo brings config up to the current standard: for any
@@ -163,9 +171,10 @@ Each phase is its own plan → implementation cycle.
 - **Phase 2** — `ts-frontend` + `ts-backend` stacks + `ci-node.yml`.
 - **Phase 3 (optional, later)** — pre-commit, C++ (blah2-arm, retina-spectrum).
 
-## Open follow-ups (not blocking)
+## Resolved follow-ups
 
-- Whether the skill should also offer to run the first install (`pip install`,
-  `npm ci`) or leave it to the dev — lean toward reporting the command, not running it.
-- Whether `CLAUDE.md` should be generated with repo-specific detail the skill
-  infers vs. left as the template stub — start with the stub, iterate later.
+- **First install:** the skill runs it (step 7), reporting the command and result;
+  skips gracefully if the toolchain is unavailable.
+- **`CLAUDE.md`:** written as a stub, then the skill prompts the dev for a short
+  description and fleshes out the template sections from that plus the scaffolded
+  stack (step 8). Skipping leaves the stub.
