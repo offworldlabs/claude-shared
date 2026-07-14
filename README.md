@@ -42,6 +42,22 @@ ln -s ../../path/to/claude-shared/rules/code-style.md .claude/rules/code-style.m
 Point the repo's `CLAUDE.md` at this repo's `docs/` for org-wide context instead
 of duplicating it (see `templates/CLAUDE.md`).
 
+### GitHub Actions (Claude PR review)
+
+Don't rely on the scaffold `/install-github-app` generates — it grants the
+workflows read-only tokens, so the review runs green but never posts a comment.
+Copy the pre-corrected workflows from `templates/github-workflows/` instead:
+
+```bash
+mkdir -p .github/workflows
+cp path/to/claude-shared/templates/github-workflows/claude-code-review.yml .github/workflows/
+cp path/to/claude-shared/templates/github-workflows/claude.yml            .github/workflows/
+```
+
+These must be committed to the repo's **default branch** before Claude will run
+on PRs (a self-modification guard in `claude-code-action`). See
+`docs/runbooks/github-actions-claude-review.md` for the full explanation.
+
 ## Contributing
 
 Skills graduate from personal experimentation into the shared `core` plugin
