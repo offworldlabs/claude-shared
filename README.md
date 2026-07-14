@@ -19,44 +19,23 @@ In any repo, add the marketplace and install the plugin:
 
 ## Adopting in a consuming repo
 
-For zero-setup adoption, copy the template settings into the repo so everyone
-who trusts the folder gets the marketplace and `core` plugin automatically:
+Adoption is driven by Claude Code, not manual copying. Once, per machine, install
+the plugin at user scope:
 
-```bash
-mkdir -p .claude
-cp path/to/claude-shared/templates/settings.json .claude/settings.json
+```
+/plugin marketplace add offworldlabs/claude-shared
+/plugin install core@offworld
 ```
 
-`.claude/settings.json` registers the `offworld` marketplace via
-`extraKnownMarketplaces` and enables `core@offworld` via `enabledPlugins`, so
-opening the repo prompts installation with no manual `/plugin` commands.
+Then, in any new repo, start Claude Code and ask:
 
-Symlink the shared rules into the repo so they stay in sync with this repo:
+> set this repo up per `claude-shared`
 
-```bash
-mkdir -p .claude/rules
-ln -s ../../path/to/claude-shared/rules/security.md   .claude/rules/security.md
-ln -s ../../path/to/claude-shared/rules/code-style.md .claude/rules/code-style.md
-```
-
-Point the repo's `CLAUDE.md` at this repo's `docs/` for org-wide context instead
-of duplicating it (see `templates/CLAUDE.md`).
-
-### GitHub Actions (Claude PR review)
-
-Don't rely on the scaffold `/install-github-app` generates — it grants the
-workflows read-only tokens, so the review runs green but never posts a comment.
-Copy the pre-corrected workflows from `templates/github-workflows/` instead:
-
-```bash
-mkdir -p .github/workflows
-cp path/to/claude-shared/templates/github-workflows/claude-code-review.yml .github/workflows/
-cp path/to/claude-shared/templates/github-workflows/claude.yml            .github/workflows/
-```
-
-These must be committed to the repo's **default branch** before Claude will run
-on PRs (a self-modification guard in `claude-code-action`). See
-`docs/runbooks/github-actions-claude-review.md` for the full explanation.
+Claude invokes the `core:setup-repo` skill, which writes `.claude/settings.json`
+(registering the marketplace and enabling `core`), a `CLAUDE.md`, the shared rules,
+the Claude review workflows, and your stack's tooling — then installs deps and
+helps you flesh out `CLAUDE.md`. See `docs/runbooks/github-actions-claude-review.md`
+for the one manual follow-up (the `CLAUDE_CODE_OAUTH_TOKEN` secret).
 
 ## Contributing
 
