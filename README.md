@@ -3,10 +3,8 @@
 Offworld Labs' org-wide Claude Code resource: a **plugin marketplace** (`offworld`)
 plus **shared reference docs** used across every repo in the organisation.
 
-- `plugins/core` — the `core` plugin (skills, commands, agents, hooks).
-- `rules/` — shared rules symlinked into each repo's `.claude/rules/`.
+- `plugins/core` — the `core` plugin; its `setup-repo` skill bundles the shared rules, `.claude/settings.json`, `CLAUDE.md`, and CI workflow templates used to scaffold new repos.
 - `docs/` — on-demand org-wide docs (architecture, contracts, decisions, runbooks).
-- `templates/` — drop-in `settings.json` and `CLAUDE.md` for new repos.
 
 ## Install
 
