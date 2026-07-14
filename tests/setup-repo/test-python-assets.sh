@@ -15,8 +15,8 @@ assert data["tool"]["pytest"]["ini_options"]["testpaths"] == ["tests"], data
 print("pyproject.toml OK")
 EOF
 
-grep -q "ruff" "$PY/requirements-dev.txt"
-grep -q "pytest" "$PY/requirements-dev.txt"
+grep -qE 'ruff>=0\.8' "$PY/requirements-dev.txt"
+grep -qE 'pytest>=8' "$PY/requirements-dev.txt"
 test -f "$PY/gitignore" && grep -q "__pycache__" "$PY/gitignore"
 test -f "$PY/tests/.gitkeep"
 echo "python assets OK"
