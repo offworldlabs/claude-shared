@@ -2,7 +2,7 @@
   Shared code-style rules for Offworld Labs repos.
   The setup-repo skill copies these into each consuming repo's .claude/rules/ so every
   repo enforces the same baseline. Edit here; the change propagates to every
-  repo that symlinks this file. Replace the TODO placeholders below with real
+  repo that copies this file. Replace the TODO placeholders below with real
   imperatives before relying on them.
 -->
 
