@@ -1,0 +1,33 @@
+# Runs the setup-repo skill's asset + engine test suites so regressions in the
+# scaffolding (assets, the scaffold engine, or the CI/asset validators) are caught
+# on every PR. Uses uv to install the test tools, matching the org Python standard.
+name: setup-repo tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install test tools
+        run: uv pip install --system pyyaml ruff pytest
+
+      - name: Run setup-repo test suites
+        run: |
+          bash tests/setup-repo/test-python-assets.sh
+          bash tests/setup-repo/test-ci-assets.sh
+          bash tests/setup-repo/test-scaffold.sh
