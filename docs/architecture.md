@@ -121,7 +121,11 @@ without a radio.
   multi-target **tracker** (Kalman + GNN) and node associator, the multi-node
   **geolocator** (Levenberg-Marquardt), auth/admin/analytics, the live-map SPA,
   and the admin dashboard. Exposes REST `/api/*` and `/ws/aircraft*` WebSocket
-  feeds behind `map`/`dash`/`api`/`testmap.retina.fm`.
+  feeds behind `map`/`dash`/`api`/`testmap.retina.fm`. The tracking, geolocation,
+  and analytics algorithms are **vendored as git submodules under `libs/`**
+  (`retina-tracker`, `retina-geolocator`, `retina-custody`, `retina-simulation`,
+  `retina-analytics`) and pip-installed into the image — those repos run *inside*
+  this server, not as separate services.
 - **tower-finder-service** (Python FastAPI) — the illuminator site-survey feature
   extracted into a standalone microservice (2026-05-20). Given a lat/lon it ranks
   nearby FM/VHF/UHF broadcast towers as candidate illuminators, querying external
@@ -130,12 +134,15 @@ without a radio.
   the monorepo (deduplication pending).
 
 ### Tooling / simulation
-- **retina-tracker** (Python) — the standalone tracker (Kalman/GNN) used in the
-  simulator pipeline and integration tests; TCP service on `:30100`. The central
-  server embeds the same tracking role.
+- **retina-tracker** (Python library) — the multi-target tracker (Kalman/GNN). In
+  production it is **not deployed standalone**: the central server vendors it as a
+  `libs/retina-tracker` git submodule and imports it directly (e.g.
+  `frame_processor`, `passive_radar`). Its own Dockerfile (a TCP service on
+  `:30100`) is used only by `retina-tracker`'s integration-test compose.
 - **retina-geolocator** (Python library) — LM delay/Doppler → lat/lon/alt/velocity
-  solver (single- and multi-node). A pip-installed library / batch tool, no
-  network service; consumed by the central server and offline scripts.
+  solver (single- and multi-node). No network service; vendored into the central
+  server as a `libs/` git submodule and also usable as a pip-installed batch tool
+  for offline scripts.
 - **retina-simulation** (Python) — fleet load-test harness; streams detection
   frames for 100–1000 synthetic nodes to a RETINA server over TCP (`:3012`).
 - **synthetic-adsb** *(not present locally; built by `retina-tracker`'s
@@ -193,8 +200,8 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `retina-gui` | Node management UI | Python/Flask |
 | `Tower-Finder` | Central RETINA server (ingest, track, geolocate, maps) | Python/FastAPI, React/Vite |
 | `tower-finder-service` | Illuminator site-survey microservice | Python/FastAPI |
-| `retina-tracker` | Multi-target tracker (Kalman/GNN) | Python |
-| `retina-geolocator` | LM delay/Doppler → position solver | Python (library) |
+| `retina-tracker` | Multi-target tracker (Kalman/GNN) — library vendored into central server | Python |
+| `retina-geolocator` | LM delay/Doppler → position solver — library vendored into central server | Python |
 | `retina-simulation` | Fleet load-test harness | Python |
 | `radar-replay` | Record/replay debug tool | Python/Flask |
 | `retina-node` | On-device compose bundle + OTA packaging | Compose, Python |
