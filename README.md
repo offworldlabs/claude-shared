@@ -31,8 +31,13 @@ for the one manual follow-up (the `CLAUDE_CODE_OAUTH_TOKEN` secret).
 ## Documentation
 
 Org-wide reference docs live under `docs/`. A consuming repo's `CLAUDE.md` should
-point at these rather than duplicating them, so there's one source of truth. Each
-subdirectory:
+point at these rather than duplicating them, so there's one source of truth.
+
+- **`docs/architecture.md`** — the org-wide system architecture: the RETINA
+  passive-radar network's tiers, signal chain, components, and deployment/fleet
+  lifecycle. Start here to understand how the repos fit together.
+
+And each subdirectory:
 
 - **`docs/contracts/`** — the source of truth for cross-service interfaces: API
   schemas, event/message formats, and shared data structures. When two services
