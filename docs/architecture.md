@@ -138,15 +138,14 @@ without a radio.
   network service; consumed by the central server and offline scripts.
 - **retina-simulation** (Python) — fleet load-test harness; streams detection
   frames for 100–1000 synthetic nodes to a RETINA server over TCP (`:3012`).
-- **synthetic-adsb** *(not a sibling repo here; referenced by integration
-  compose)* — simulates ADS-B on `:5001` with injectable anomalies; stands in for
-  real SDR + ADS-B in local testing.
-- **tracker-host** *(not a sibling repo here; referenced by integration compose)*
-  — bridges `synthetic-adsb` to `retina-tracker`'s TCP port.
+- **synthetic-adsb** *(not present locally; built by `retina-tracker`'s
+  integration-test compose)* — simulates ADS-B on `:5001` with injectable
+  anomalies; stands in for real SDR + ADS-B in local testing.
+- **tracker-host** *(not present locally; built by `retina-tracker`'s
+  integration-test compose)* — bridges `synthetic-adsb` to `retina-tracker`'s TCP
+  port.
 - **radar-replay** (Python/Flask) — records a live node's API to JSONL and replays
   it through the same API (`:8090`) for offline debugging.
-- **3lips-telemetry-solver** — empty skeleton in-repo; by name likely the intended
-  multi-node telemetry/geolocation solver, but **unimplemented here**.
 
 ## 4. Deployment & fleet lifecycle
 
@@ -202,7 +201,6 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `owl-os` | Pi 5 OS image builder (Mender/EDI) | EDI, Ansible |
 | `node-infra` | Central fleet automation (Mender auto-accept) | Python |
 | `landing-page-retina` | Public marketing site | Static HTML |
-| `3lips-telemetry-solver` | (empty) intended telemetry solver | — |
 
 ## 6. Open questions / to reconcile
 
@@ -217,11 +215,11 @@ These surfaced during the survey and are not yet confirmed from the repos:
   from a URL. The component that publishes solved tracks as the `aircraft.json`
   the map serves is **(inferred)** — likely the central server's in-memory state /
   WebSocket feed rather than the standalone geolocator.
-- **`synthetic-adsb` and `tracker-host`** are referenced by the integration
-  compose but are not present as sibling repos here; the documented simulator
-  pipeline can't be built from these directories alone.
-- **`3lips-telemetry-solver`** is an empty skeleton — the multi-node telemetry
-  solver role is unimplemented in-repo.
+- **`synthetic-adsb` and `tracker-host`** are built by `retina-tracker`'s
+  integration-test compose (`docker-compose.integration-test.yml`, via build
+  contexts `./synthetic-adsb` and `./tracker-host`) but are not present as sibling
+  repos here; the documented simulator pipeline can't be built from these
+  directories alone.
 - **Duplicate tower code** in `Tower-Finder` and `tower-finder-service` pending
   deduplication; `tower-finder-service`'s healthcheck hits `/api/health` despite
   its README saying that endpoint was dropped on extraction.
