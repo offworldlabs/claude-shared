@@ -203,7 +203,8 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `retina-node` | On-device compose bundle + OTA packaging | Compose, Python |
 | `owl-os` | Pi 5 OS image builder (Mender/EDI) | EDI, Ansible |
 | `node-infra` | Central fleet automation (Mender auto-accept) | Python |
-| `landing-page-retina` | Public marketing site | Static HTML |
+| `landing-page-retina` | RETINA public marketing site | Static HTML |
+| `landing-page-owl` | Owl product landing page (placeholder/template at last survey) | Static HTML |
 
 ## 6. Open questions / to reconcile
 
@@ -223,6 +224,8 @@ These surfaced during the survey and are not yet confirmed from the repos:
   its README saying that endpoint was dropped on extraction.
 - **Mixed default geographies** (San Francisco vs Adelaide) across
   `retina-tracker`, the integration compose, and `blah2` defaults.
-- Two similarly named repos exist: `landing-page-retina` (the actual static site)
-  and `landingpage` (an unconfigured GitHub Pages course template) — confirm which
-  publishes the public site.
+- Two product landing pages exist: `landing-page-retina` and `landing-page-owl`
+  (the latter renamed from `landingpage`). At last survey `landing-page-owl` still
+  held an unconfigured GitHub Pages template rather than real content, and neither
+  repo had evidenced deploy config (CI / CNAME) — confirm `landing-page-owl` has
+  been populated and how both are published.
