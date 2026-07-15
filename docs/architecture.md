@@ -68,6 +68,14 @@ SDR (RSPduo) → blah2 C++ processor → blah2 Node API (:3000 /api/detection �
    → in-memory track state → /ws/aircraft* WebSocket → live map SPA
 ```
 
+**Caveat — the node→central forward is config-gated.** The "forwarded over TCP to
+the central server" step depends on each node's merged `tracker_forward` config.
+On the one production node inspected, forwarding was **disabled** (`enabled: false`,
+base default `blah2_tracker:3012`, not the `retina` profile's
+`tracker.retnode.com:30050`) — so this hop is not necessarily live fleet-wide (see
+open questions). Such a node still runs the full local pipeline (`blah2` + ADS-B
+truth) but doesn't feed the central server.
+
 **Ordering: tracker before geolocator.** A common summary of the pipeline lists
 the geolocator before the tracker; the code is unambiguous the other way. The
 **tracker runs first** (it turns detections into tracks) and the **geolocator
@@ -218,14 +226,18 @@ marketing site is a separate static repo (`landing-page-retina`).
 
 These surfaced during the survey and are not yet confirmed from the repos:
 
-- **Detection-forwarding port mapping.** Confirmed from code: nodes on the
-  `retina` network profile forward to `tracker.retnode.com:30050`, while the
-  central server binds `:3012` — and **no `30050`→`3012` mapping exists in either
-  repo** (no nginx `stream` block, no `30050` reference outside the node config),
-  so this hop is infrastructure, not code. Still to confirm at the infra level:
-  resolve `tracker.retnode.com` (`dig`), check what publishes/redirects `30050` on
-  the droplet (`docker compose ps` — the prod compose may publish `30050:3012` —
-  or an LB / `iptables` DNAT), and confirm a node connects end-to-end.
+- **Detection forwarding was disabled on the inspected node.** On a live
+  production node, `blah2`'s merged config shows
+  `tracker_forward: {enabled: false, host: blah2_tracker, port: 3012}` — it does
+  **not** forward to a central collector, and it carries the base defaults, not the
+  `retina` network profile's `tracker.retnode.com:30050`. That profile is a
+  template that isn't applied here (its host has no public DNS record — NXDOMAIN —
+  and its token is a placeholder), which is why the earlier `:30050`↔`:3012`
+  question had no answer in the repos: `:30050` is never used on this node. Still
+  open across the fleet: whether *any* production node currently forwards to the
+  central server, and to what real host/port — check other nodes' merged configs
+  and the central server's connected-node list. The `:3012` ingest is meanwhile
+  exercised by the `retina-simulation` harness.
 - **Duplicate tower code** in `Tower-Finder` and `tower-finder-service` pending
   deduplication; `tower-finder-service`'s healthcheck hits `/api/health` despite
   its README saying that endpoint was dropped on extraction.
