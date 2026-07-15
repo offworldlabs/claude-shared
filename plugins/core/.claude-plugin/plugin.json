@@ -1,0 +1,8 @@
+{
+  "name": "core",
+  "version": "0.2.0",
+  "description": "Core Offworld Labs skills, commands, agents, and hooks shared across all repos.",
+  "author": {
+    "name": "Offworld Labs"
+  }
+}

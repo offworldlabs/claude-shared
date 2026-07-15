@@ -1,0 +1,14 @@
+{
+  "name": "offworld",
+  "owner": {
+    "name": "Offworld Labs"
+  },
+  "description": "Org-wide Claude Code plugins for Offworld Labs.",
+  "plugins": [
+    {
+      "name": "core",
+      "source": "./plugins/core",
+      "description": "Core Offworld Labs skills, commands, agents, and hooks shared across all repos."
+    }
+  ]
+}
