@@ -4,7 +4,7 @@ Offworld Labs' org-wide Claude Code resource: a **plugin marketplace** (`offworl
 plus **shared reference docs** used across every repo in the organisation.
 
 - `plugins/core` — the `core` plugin; its `setup-repo` skill bundles the shared rules, `.claude/settings.json`, `CLAUDE.md`, and CI workflow templates used to scaffold new repos.
-- `docs/` — on-demand org-wide docs (architecture, contracts, decisions, runbooks).
+- `docs/` — on-demand org-wide reference docs (see [Documentation](#documentation)).
 
 ## Install
 
@@ -27,6 +27,23 @@ Claude invokes the `core:setup-repo` skill, which writes `.claude/settings.json`
 the Claude review workflows, and your stack's tooling — then installs deps and
 helps you flesh out `CLAUDE.md`. See `docs/runbooks/github-actions-claude-review.md`
 for the one manual follow-up (the `CLAUDE_CODE_OAUTH_TOKEN` secret).
+
+## Documentation
+
+Org-wide reference docs live under `docs/`. A consuming repo's `CLAUDE.md` should
+point at these rather than duplicating them, so there's one source of truth. Each
+subdirectory:
+
+- **`docs/contracts/`** — the source of truth for cross-service interfaces: API
+  schemas, event/message formats, and shared data structures. When two services
+  communicate, the contract lives here and consuming repos reference it instead of
+  copying it, so it can't drift.
+- **`docs/decisions/`** — Architecture Decision Records (ADRs). One append-only
+  record per significant, org-wide technical decision: its context, the options
+  considered, the decision made, and the consequences.
+- **`docs/runbooks/`** — operational procedures: deployments, incident response,
+  rollbacks, and recovery playbooks. Concrete enough to follow under pressure —
+  exact commands, expected output, and escalation paths.
 
 ## Contributing
 
