@@ -22,6 +22,10 @@ assert "ruff check ." in runs, runs
 assert "ruff format --check ." in runs, runs
 assert "pytest" in runs, runs
 assert "requirements.txt" in runs and "requirements-dev.txt" in runs, runs
+# org standard: install with uv, not pip
+assert "uv pip install" in runs, runs
+uses = [str(s.get("uses", "")) for s in steps]
+assert any(u.startswith("astral-sh/setup-uv") for u in uses), uses
 setup_py = [s for s in steps if str(s.get("uses", "")).startswith("actions/setup-python")]
 assert setup_py and setup_py[0]["with"]["python-version"] == "3.12", setup_py
 print("ci-python.yml OK")

@@ -26,10 +26,14 @@ interactive parts and the report.
    `bash "$ENGINE" . <stack>`
    Relay its `WRITTEN` / `SKIPPED` output to the user.
 
-4. **Install dependencies.** For `python`, run
-   `pip install -r requirements.txt -r requirements-dev.txt`
-   (prefer an active virtualenv). Report the command and result; if the
-   toolchain is unavailable, skip and note it rather than failing.
+4. **Install dependencies.** For `python`, use `uv` (the org standard, a fast
+   drop-in for pip that reads the same `requirements.txt`): create a venv and
+   install with
+   `uv venv && uv pip install -r requirements.txt -r requirements-dev.txt`.
+   If `uv` isn't installed, fall back to
+   `pip install -r requirements.txt -r requirements-dev.txt` in an active
+   virtualenv. Report the command and result; if the toolchain is unavailable,
+   skip and note it rather than failing.
 
 5. **Flesh out CLAUDE.md.** The stub was just written. Ask the user for a
    one-or-two-line description of what this repo does, then fill in the
