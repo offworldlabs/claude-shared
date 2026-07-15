@@ -80,6 +80,14 @@ libraries inside the central server (see §3), not as separate services.
 nodes to the central server's ingest port, alongside the server's own
 synthetic-node handling.
 
+**Live map feed.** Geolocated tracks reach the map *inside* the central server,
+not via a file or tar1090's `aircraft.json`. Geolocation runs in-process
+(`_run_geolocation()` during frame processing, updating an in-memory geolocated-
+aircraft store in `backend/core/state.py`), and that state is broadcast over the
+`/ws/aircraft*` WebSocket endpoints (`backend/routes/streaming.py`) to the live-map
+SPA (`frontend/src/components/map/hooks.ts`). The standalone `retina-geolocator`'s
+JSONL output is the offline/batch path, not the live feed.
+
 ## 3. Component catalogue
 
 ### Edge / on-node
@@ -210,15 +218,14 @@ marketing site is a separate static repo (`landing-page-retina`).
 
 These surfaced during the survey and are not yet confirmed from the repos:
 
-- **Detection-forwarding endpoint.** Nodes forward to a central collector
-  (`tracker.retnode.com:30050` in the node network profile), while the central
-  server's documented TCP ingest is `:3012`. The mapping between the two
-  (proxy / NAT / separate collector) is **unverified**.
-- **How geolocated tracks reach the map.** `retina-geolocator` writes results to a
-  JSONL file and exposes no network interface; the map proxy reads `aircraft.json`
-  from a URL. The component that publishes solved tracks as the `aircraft.json`
-  the map serves is **(inferred)** — likely the central server's in-memory state /
-  WebSocket feed rather than the standalone geolocator.
+- **Detection-forwarding port mapping.** Confirmed from code: nodes on the
+  `retina` network profile forward to `tracker.retnode.com:30050`, while the
+  central server binds `:3012` — and **no `30050`→`3012` mapping exists in either
+  repo** (no nginx `stream` block, no `30050` reference outside the node config),
+  so this hop is infrastructure, not code. Still to confirm at the infra level:
+  resolve `tracker.retnode.com` (`dig`), check what publishes/redirects `30050` on
+  the droplet (`docker compose ps` — the prod compose may publish `30050:3012` —
+  or an LB / `iptables` DNAT), and confirm a node connects end-to-end.
 - **Duplicate tower code** in `Tower-Finder` and `tower-finder-service` pending
   deduplication; `tower-finder-service`'s healthcheck hits `/api/health` despite
   its README saying that endpoint was dropped on extraction.
