@@ -56,11 +56,8 @@ Three tiers plus external inputs and an out-of-band control plane:
 
 ## 2. Signal chain (data flow)
 
-There are **two ingestion fronts** feeding a common tracking → geolocation →
-visualization tail: the real SDR front (production) and a simulator front (used
-for hardware-free local testing).
-
-**A. Real SDR node (production)**
+The production flow runs from an SDR at the edge to the live map, with the
+tracker and geolocator running as libraries **inside** the central server:
 
 ```
 SDR (RSPduo) → blah2 C++ processor → blah2 Node API (:3000 /api/detection …)
@@ -71,53 +68,17 @@ SDR (RSPduo) → blah2 C++ processor → blah2 Node API (:3000 /api/detection �
    → in-memory track state → /ws/aircraft* WebSocket → live map SPA
 ```
 
-**B. Simulator front (hardware-free testing)**
+**Ordering: tracker before geolocator.** A common summary of the pipeline lists
+the geolocator before the tracker; the code is unambiguous the other way. The
+**tracker runs first** (it turns detections into tracks) and the **geolocator
+runs on the tracker's output** (it solves each track's geographic position) —
+`retina-geolocator` consumes `retina-tracker`'s track output. Both run as
+libraries inside the central server (see §3), not as separate services.
 
-```
-synthetic-adsb (:5001 /data/aircraft.json, with injectable anomalies)
-   → adsb2dd (:49155 → .detection frames) → retina-tracker (:30100 TCP, via tracker-host bridge)
-   → retina-geolocator (batch: track JSONL → lat/lon/alt JSONL)
-   → tar1090 map (tar1090-node proxy serves enriched aircraft.json; readsb disabled)
-```
-
-**Ordering correction.** A common summary of the pipeline lists the geolocator
-before the tracker. The code is unambiguous the other way: the **tracker runs
-first** (it turns detections into tracks) and the **geolocator runs on the
-tracker's output** (it solves each track's geographic position). The true order
-is `detections → tracker → geolocator`. `retina-geolocator` consumes
-`retina-tracker`'s JSONL track output, and `adsb2dd`'s synthetic detections are
-explicitly "compatible with retina-tracker."
-
-**Two sources, not a sequence.** `blah2` (real SDR DSP) and the simulator front
-are *alternatives* for the same tail, not sequential stages — the simulator
-stands in for the SDR + ADS-B hardware when testing without a radio.
-
-### Are the simulators used in production?
-
-No — `synthetic-adsb` and `tracker-host` are a **test-only** harness. The evidence:
-they appear **only** in `retina-tracker`'s integration-test compose and test
-scripts (`docker-compose.integration-test.yml`, `test_anomaly_*.sh`,
-`tests/test_integration_synthetic.py`), and in **none** of the production deploy
-paths — not the `retina-node` edge stack, not `owl-os`, not `node-infra`, and not
-the central server's build. They also aren't published as `ghcr.io/offworldlabs/*`
-images that any prod compose pulls.
-
-Production *synthetic* data is a different mechanism, easy to confuse by name:
-the central server has its own internal `_apply_synthetic_adsb` handling for
-"synth" nodes in `backend/services/tcp_handler.py`, fed by the `retina-simulation`
-load harness streaming to the ingest port — not by the `synthetic-adsb` container.
-So a name match in the central server is *not* evidence the standalone repo is
-deployed.
-
-**How to verify this yourself** for any component: `grep -rniE '<name>'` across the
-repos that actually deploy — `retina-node` and `owl-os` (edge), `Tower-Finder`
-(central), `node-infra` (fleet) — over `*.yml`, `Dockerfile*`, `*.sh`, and CI
-workflows; then classify each hit as a *test/integration* artifact (path or name
-contains `test`/`integration`) or a *production* path (release workflow, prod
-compose, systemd unit, the edge stack). If every hit is a test artifact and no
-prod compose pulls a published image for it, it isn't in production. Watch for
-name collisions — an internal function like `_apply_synthetic_adsb` is not the
-`synthetic-adsb` repo.
+**Testing & simulation.** The pipeline is exercised without radio hardware by the
+`retina-simulation` load harness, which streams synthetic detections for many
+nodes to the central server's ingest port, alongside the server's own
+synthetic-node handling.
 
 ## 3. Component catalogue
 
@@ -184,14 +145,6 @@ name collisions — an internal function like `_apply_synthetic_adsb` is not the
   server's imports — the submodule isn't checked out locally.)*
 - **retina-simulation** (Python) — fleet load-test harness; streams detection
   frames for 100–1000 synthetic nodes to a RETINA server over TCP (`:3012`).
-- **synthetic-adsb** *(test-only; not present locally)* — simulates ADS-B on
-  `:5001` with injectable anomalies; stands in for real SDR + ADS-B. Referenced
-  **only** by `retina-tracker`'s integration-test compose and test scripts — not
-  by any production deploy path (see "Are the simulators used in production?"
-  below).
-- **tracker-host** *(test-only; not present locally)* — bridges `synthetic-adsb`
-  to `retina-tracker`'s TCP port; likewise referenced only by `retina-tracker`'s
-  integration harness.
 - **radar-replay** (Python/Flask) — records a live node's API to JSONL and replays
   it through the same API (`:8090`) for offline debugging.
 
