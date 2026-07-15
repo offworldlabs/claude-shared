@@ -88,10 +88,36 @@ is `detections → tracker → geolocator`. `retina-geolocator` consumes
 `retina-tracker`'s JSONL track output, and `adsb2dd`'s synthetic detections are
 explicitly "compatible with retina-tracker."
 
-**Two sources, not a sequence.** `blah2` (real SDR DSP) and `synthetic-adsb`
-(simulator) are *alternative* front-ends for the same tail, not sequential
-stages — the simulator stands in for the SDR + ADS-B hardware when testing
-without a radio.
+**Two sources, not a sequence.** `blah2` (real SDR DSP) and the simulator front
+are *alternatives* for the same tail, not sequential stages — the simulator
+stands in for the SDR + ADS-B hardware when testing without a radio.
+
+### Are the simulators used in production?
+
+No — `synthetic-adsb` and `tracker-host` are a **test-only** harness. The evidence:
+they appear **only** in `retina-tracker`'s integration-test compose and test
+scripts (`docker-compose.integration-test.yml`, `test_anomaly_*.sh`,
+`tests/test_integration_synthetic.py`), and in **none** of the production deploy
+paths — not the `retina-node` edge stack, not `owl-os`, not `node-infra`, and not
+the central server's build. They also aren't published as `ghcr.io/offworldlabs/*`
+images that any prod compose pulls.
+
+Production *synthetic* data is a different mechanism, easy to confuse by name:
+the central server has its own internal `_apply_synthetic_adsb` handling for
+"synth" nodes in `backend/services/tcp_handler.py`, fed by the `retina-simulation`
+load harness streaming to the ingest port — not by the `synthetic-adsb` container.
+So a name match in the central server is *not* evidence the standalone repo is
+deployed.
+
+**How to verify this yourself** for any component: `grep -rniE '<name>'` across the
+repos that actually deploy — `retina-node` and `owl-os` (edge), `Tower-Finder`
+(central), `node-infra` (fleet) — over `*.yml`, `Dockerfile*`, `*.sh`, and CI
+workflows; then classify each hit as a *test/integration* artifact (path or name
+contains `test`/`integration`) or a *production* path (release workflow, prod
+compose, systemd unit, the edge stack). If every hit is a test artifact and no
+prod compose pulls a published image for it, it isn't in production. Watch for
+name collisions — an internal function like `_apply_synthetic_adsb` is not the
+`synthetic-adsb` repo.
 
 ## 3. Component catalogue
 
@@ -143,14 +169,29 @@ without a radio.
   solver (single- and multi-node). No network service; vendored into the central
   server as a `libs/` git submodule and also usable as a pip-installed batch tool
   for offline scripts.
+- **retina-custody** (Python library) — cryptographic chain-of-custody for node
+  data: node identity (`NodeIdentity`), signature verification (`SignatureVerifier`,
+  `SoftwareCryptoBackend`), and tamper-evident hash chains (`HashChainBuilder`/
+  `Verifier`). Makes each node's detections authenticated and tamper-evident.
+  Vendored into the central server as a `libs/` submodule; imported by
+  `backend/core/state.py`. *(Role derived from the central server's imports — the
+  submodule isn't checked out locally.)*
+- **retina-analytics** (Python library) — per-node analytics and trust: inter-node
+  detection association (`InterNodeAssociator`), node reputation and trust scoring
+  (`NodeReputation`, `TrustScoreState`, `AdsReportEntry`), coordinated by a
+  `NodeAnalyticsManager`. Vendored into the central server as a `libs/` submodule;
+  drives live state and the `/api/analytics` route. *(Role derived from the central
+  server's imports — the submodule isn't checked out locally.)*
 - **retina-simulation** (Python) — fleet load-test harness; streams detection
   frames for 100–1000 synthetic nodes to a RETINA server over TCP (`:3012`).
-- **synthetic-adsb** *(not present locally; built by `retina-tracker`'s
-  integration-test compose)* — simulates ADS-B on `:5001` with injectable
-  anomalies; stands in for real SDR + ADS-B in local testing.
-- **tracker-host** *(not present locally; built by `retina-tracker`'s
-  integration-test compose)* — bridges `synthetic-adsb` to `retina-tracker`'s TCP
-  port.
+- **synthetic-adsb** *(test-only; not present locally)* — simulates ADS-B on
+  `:5001` with injectable anomalies; stands in for real SDR + ADS-B. Referenced
+  **only** by `retina-tracker`'s integration-test compose and test scripts — not
+  by any production deploy path (see "Are the simulators used in production?"
+  below).
+- **tracker-host** *(test-only; not present locally)* — bridges `synthetic-adsb`
+  to `retina-tracker`'s TCP port; likewise referenced only by `retina-tracker`'s
+  integration harness.
 - **radar-replay** (Python/Flask) — records a live node's API to JSONL and replays
   it through the same API (`:8090`) for offline debugging.
 
@@ -202,7 +243,9 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `tower-finder-service` | Illuminator site-survey microservice | Python/FastAPI |
 | `retina-tracker` | Multi-target tracker (Kalman/GNN) — library vendored into central server | Python |
 | `retina-geolocator` | LM delay/Doppler → position solver — library vendored into central server | Python |
-| `retina-simulation` | Fleet load-test harness | Python |
+| `retina-custody` | Node identity + signature/hash-chain custody — library vendored into central server | Python |
+| `retina-analytics` | Inter-node association + node reputation/trust — library vendored into central server | Python |
+| `retina-simulation` | Fleet load-test harness — library vendored into central server | Python |
 | `radar-replay` | Record/replay debug tool | Python/Flask |
 | `retina-node` | On-device compose bundle + OTA packaging | Compose, Python |
 | `owl-os` | Pi 5 OS image builder (Mender/EDI) | EDI, Ansible |
@@ -222,11 +265,6 @@ These surfaced during the survey and are not yet confirmed from the repos:
   from a URL. The component that publishes solved tracks as the `aircraft.json`
   the map serves is **(inferred)** — likely the central server's in-memory state /
   WebSocket feed rather than the standalone geolocator.
-- **`synthetic-adsb` and `tracker-host`** are built by `retina-tracker`'s
-  integration-test compose (`docker-compose.integration-test.yml`, via build
-  contexts `./synthetic-adsb` and `./tracker-host`) but are not present as sibling
-  repos here; the documented simulator pipeline can't be built from these
-  directories alone.
 - **Duplicate tower code** in `Tower-Finder` and `tower-finder-service` pending
   deduplication; `tower-finder-service`'s healthcheck hits `/api/health` despite
   its README saying that endpoint was dropped on extraction.
