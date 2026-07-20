@@ -82,8 +82,8 @@ trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS" "$TMP_TSF"' EXIT
 git -C "$TMP_TSF" init -q
 bash "$ENGINE" "$TMP_TSF" ts-frontend
 for f in .claude/settings.json CLAUDE.md .editorconfig \
-         package.json tsconfig.json eslint.config.js vitest.config.ts .gitignore \
-         src/index.ts src/index.test.ts .github/workflows/ci.yml \
+         package.json tsconfig.json eslint.config.js vite.config.ts .gitignore \
+         index.html src/index.ts src/index.test.ts src/main.tsx .github/workflows/ci.yml \
          .github/workflows/claude.yml; do
   test -e "$TMP_TSF/$f" || { echo "MISSING (ts-frontend): $f" >&2; exit 1; }
 done

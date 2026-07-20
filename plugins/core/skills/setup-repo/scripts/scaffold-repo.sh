@@ -55,10 +55,12 @@ case "$STACK" in
     copy "$ASSETS/stack/ts-frontend/package.json"     "$TARGET/package.json"
     copy "$ASSETS/stack/ts-frontend/tsconfig.json"    "$TARGET/tsconfig.json"
     copy "$ASSETS/stack/ts-frontend/eslint.config.js" "$TARGET/eslint.config.js"
-    copy "$ASSETS/stack/ts-frontend/vitest.config.ts" "$TARGET/vitest.config.ts"
+    copy "$ASSETS/stack/ts-frontend/vite.config.ts"   "$TARGET/vite.config.ts"
     copy "$ASSETS/stack/ts-frontend/gitignore"        "$TARGET/.gitignore"
+    copy "$ASSETS/stack/ts-frontend/index.html"        "$TARGET/index.html"
     copy "$ASSETS/stack/ts-frontend/src/index.ts"      "$TARGET/src/index.ts"
     copy "$ASSETS/stack/ts-frontend/src/index.test.ts" "$TARGET/src/index.test.ts"
+    copy "$ASSETS/stack/ts-frontend/src/main.tsx"      "$TARGET/src/main.tsx"
     copy "$ASSETS/ci/ci-node.yml"                     "$TARGET/.github/workflows/ci.yml"
     ;;
   ts-backend)

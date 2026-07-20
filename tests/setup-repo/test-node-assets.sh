@@ -28,7 +28,7 @@ EOF
 
 check_stack_files() { # check_stack_files <dir>
   local dir="$1"
-  for f in package.json tsconfig.json eslint.config.js vitest.config.ts gitignore \
+  for f in package.json tsconfig.json eslint.config.js gitignore \
            src/index.ts src/index.test.ts; do
     test -f "$dir/$f" || { echo "MISSING: $dir/$f" >&2; exit 1; }
   done
@@ -39,10 +39,14 @@ check_stack_files() { # check_stack_files <dir>
 
 check_stack_files "$STK/ts-frontend"
 check_pkg "$STK/ts-frontend" 1
+for f in vite.config.ts index.html src/main.tsx; do
+  test -f "$STK/ts-frontend/$f" || { echo "MISSING: $STK/ts-frontend/$f" >&2; exit 1; }
+done
 echo "ts-frontend assets OK"
 
 check_stack_files "$STK/ts-backend"
 check_pkg "$STK/ts-backend" 0
+test -f "$STK/ts-backend/vitest.config.ts" || { echo "MISSING: $STK/ts-backend/vitest.config.ts" >&2; exit 1; }
 echo "ts-backend assets OK"
 
 CI="$ROOT/plugins/core/skills/setup-repo/assets/ci/ci-node.yml"
