@@ -36,14 +36,20 @@ interactive parts and the report.
    - **ts-frontend / ts-backend:** run `npm install` (this generates
      `package-lock.json` — remind the user to commit it, since the CI workflow uses
      `npm ci`).
+   - **pre-commit (python & ts stacks):** after the stack deps are installed,
+     register the git hook so the scaffolded `.pre-commit-config.yaml` runs on
+     every commit: `uvx pre-commit install` (or `pipx run pre-commit install`, or
+     `pip install pre-commit && pre-commit install`). Skip with a note if
+     pre-commit/uv is unavailable.
    Report the command and result; if the toolchain is unavailable, skip and note it
    rather than failing.
 
 5. **Flesh out CLAUDE.md.** The stub was just written. Ask the user for a
    one-or-two-line description of what this repo does, then fill in the
    `Project Overview`, `Build & Test Commands`, and `Local Architecture`
-   sections from their answer plus what was scaffolded (stack, `ruff check .`,
-   `ruff format --check .`, `pytest`). If they skip, leave the stub as-is. Keep
+   sections from their answer plus what was scaffolded (stack; lint/format via
+   `pre-commit run --all-files`; tests via `pytest` or `npm test`). If they skip,
+   leave the stub as-is. Keep
    CLAUDE.md under the 200-line ceiling noted in the template.
 
 6. **Report and follow-ups.** Summarise files written vs skipped, then list the

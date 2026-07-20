@@ -66,10 +66,14 @@ setup_node = [s for s in steps if str(s.get("uses", "")).startswith("actions/set
 assert setup_node, uses
 assert setup_node[0]["with"]["node-version"] == "20", setup_node
 assert setup_node[0]["with"]["cache"] == "npm", setup_node
+setup_py = [s for s in steps if str(s.get("uses", "")).startswith("actions/setup-python")]
+assert setup_py and setup_py[0]["with"]["python-version"] == "3.12", setup_py
+assert any(u.startswith("astral-sh/setup-uv") for u in uses), uses
 runs = "\n".join(s.get("run", "") for s in steps)
 assert "npm ci" in runs, runs
 assert "npm run typecheck" in runs, runs
-assert "npm run lint" in runs, runs
+assert "pre-commit run --all-files" in runs, runs
+assert "npm run lint" not in runs, runs      # eslint now runs via pre-commit
 assert "npm test" in runs, runs
 print("ci-node.yml OK")
 EOF
