@@ -58,7 +58,10 @@ assert on["push"]["branches"] == ["main"], on
 assert "pull_request" in on, on
 steps = doc["jobs"]["lint-and-test"]["steps"]
 uses = [str(s.get("uses", "")) for s in steps]
-assert any(u.startswith("actions/setup-node") for u in uses), uses
+setup_node = [s for s in steps if str(s.get("uses", "")).startswith("actions/setup-node")]
+assert setup_node, uses
+assert setup_node[0]["with"]["node-version"] == "20", setup_node
+assert setup_node[0]["with"]["cache"] == "npm", setup_node
 runs = "\n".join(s.get("run", "") for s in steps)
 assert "npm ci" in runs, runs
 assert "npm run typecheck" in runs, runs
