@@ -30,4 +30,5 @@ jobs:
         run: |
           bash tests/setup-repo/test-python-assets.sh
           bash tests/setup-repo/test-ci-assets.sh
+          bash tests/setup-repo/test-node-assets.sh
           bash tests/setup-repo/test-scaffold.sh

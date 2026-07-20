@@ -75,4 +75,34 @@ git -C "$BOGUS" init -q
 set +e; bash "$ENGINE" "$BOGUS" bogus >/dev/null 2>&1; rc=$?; set -e
 [ "$rc" -eq 2 ] || { echo "expected exit 2 for unknown stack, got $rc" >&2; exit 1; }
 [ -z "$(ls -A "$BOGUS" | grep -v '^.git$' || true)" ] || { echo "unknown stack wrote files" >&2; exit 1; }
+
+# ts-frontend: writes node/ts files + ci.yml, omits python-only files
+TMP_TSF="$(mktemp -d)"
+trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS" "$TMP_TSF"' EXIT
+git -C "$TMP_TSF" init -q
+bash "$ENGINE" "$TMP_TSF" ts-frontend
+for f in .claude/settings.json CLAUDE.md .editorconfig \
+         package.json tsconfig.json eslint.config.js vite.config.ts .gitignore \
+         index.html src/index.ts src/index.test.ts src/main.tsx .github/workflows/ci.yml \
+         .github/workflows/claude.yml; do
+  test -e "$TMP_TSF/$f" || { echo "MISSING (ts-frontend): $f" >&2; exit 1; }
+done
+for f in pyproject.toml requirements.txt requirements-dev.txt; do
+  test -e "$TMP_TSF/$f" && { echo "UNEXPECTED (ts-frontend): $f" >&2; exit 1; }
+done
+python3 -c "import json; json.load(open('$TMP_TSF/package.json'))"
+grep -q '"react"' "$TMP_TSF/package.json" || { echo "ts-frontend missing react" >&2; exit 1; }
+grep -q 'npm ci' "$TMP_TSF/.github/workflows/ci.yml" || { echo "ts-frontend ci not node" >&2; exit 1; }
+
+# ts-backend: same file set, no react
+TMP_TSB="$(mktemp -d)"
+trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS" "$TMP_TSF" "$TMP_TSB"' EXIT
+git -C "$TMP_TSB" init -q
+bash "$ENGINE" "$TMP_TSB" ts-backend
+for f in package.json tsconfig.json eslint.config.js vitest.config.ts .gitignore \
+         src/index.ts .github/workflows/ci.yml; do
+  test -e "$TMP_TSB/$f" || { echo "MISSING (ts-backend): $f" >&2; exit 1; }
+done
+grep -q '"react"' "$TMP_TSB/package.json" && { echo "ts-backend should not have react" >&2; exit 1; }
+python3 -c "import json; json.load(open('$TMP_TSB/package.json'))"
 echo "ALL CHECKS PASSED"

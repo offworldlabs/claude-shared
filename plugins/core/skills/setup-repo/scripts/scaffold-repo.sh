@@ -2,7 +2,7 @@
 # Deterministic file-scaffolding engine for the core:setup-repo skill.
 # Copies bundled assets into a target repo without clobbering existing files.
 # Usage: scaffold-repo.sh <target_dir> <stack>
-#   <stack>: python | none   (ts-frontend / ts-backend land in Phase 2)
+#   <stack>: python | ts-frontend | ts-backend | none
 set -euo pipefail
 
 TARGET="${1:?target dir required}"
@@ -10,7 +10,7 @@ STACK="${2:-none}"
 ASSETS="$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets" && pwd)"
 
 case "$STACK" in
-  python|none) ;;
+  python|ts-frontend|ts-backend|none) ;;
   *) echo "unknown stack: $STACK" >&2; exit 2 ;;
 esac
 
@@ -50,6 +50,28 @@ case "$STACK" in
     copy "$ASSETS/stack/python/gitignore"            "$TARGET/.gitignore"
     copy "$ASSETS/stack/python/tests/.gitkeep"       "$TARGET/tests/.gitkeep"
     copy "$ASSETS/ci/ci-python.yml"                  "$TARGET/.github/workflows/ci.yml"
+    ;;
+  ts-frontend)
+    copy "$ASSETS/stack/ts-frontend/package.json"     "$TARGET/package.json"
+    copy "$ASSETS/stack/ts-frontend/tsconfig.json"    "$TARGET/tsconfig.json"
+    copy "$ASSETS/stack/ts-frontend/eslint.config.js" "$TARGET/eslint.config.js"
+    copy "$ASSETS/stack/ts-frontend/vite.config.ts"   "$TARGET/vite.config.ts"
+    copy "$ASSETS/stack/ts-frontend/gitignore"        "$TARGET/.gitignore"
+    copy "$ASSETS/stack/ts-frontend/index.html"        "$TARGET/index.html"
+    copy "$ASSETS/stack/ts-frontend/src/index.ts"      "$TARGET/src/index.ts"
+    copy "$ASSETS/stack/ts-frontend/src/index.test.ts" "$TARGET/src/index.test.ts"
+    copy "$ASSETS/stack/ts-frontend/src/main.tsx"      "$TARGET/src/main.tsx"
+    copy "$ASSETS/ci/ci-node.yml"                     "$TARGET/.github/workflows/ci.yml"
+    ;;
+  ts-backend)
+    copy "$ASSETS/stack/ts-backend/package.json"      "$TARGET/package.json"
+    copy "$ASSETS/stack/ts-backend/tsconfig.json"     "$TARGET/tsconfig.json"
+    copy "$ASSETS/stack/ts-backend/eslint.config.js"  "$TARGET/eslint.config.js"
+    copy "$ASSETS/stack/ts-backend/vitest.config.ts"  "$TARGET/vitest.config.ts"
+    copy "$ASSETS/stack/ts-backend/gitignore"         "$TARGET/.gitignore"
+    copy "$ASSETS/stack/ts-backend/src/index.ts"       "$TARGET/src/index.ts"
+    copy "$ASSETS/stack/ts-backend/src/index.test.ts"  "$TARGET/src/index.test.ts"
+    copy "$ASSETS/ci/ci-node.yml"                     "$TARGET/.github/workflows/ci.yml"
     ;;
   none) ;;
 esac

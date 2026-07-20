@@ -18,22 +18,26 @@ interactive parts and the report.
    (`git rev-parse --is-inside-work-tree`). If it is not, offer to run
    `git init`; abort if the user declines.
 
-2. **Determine the stack.** Detect from existing files: `pyproject.toml` or
-   `requirements*.txt` → `python`. If ambiguous or empty, ask the user to choose
-   `python` or `none` (ts-frontend / ts-backend arrive in a later phase).
+2. **Determine the stack.** Detect from existing files: `pyproject.toml` /
+   `requirements*.txt` → `python`; `package.json` / `tsconfig.json` → TypeScript
+   (then ask whether it's `ts-frontend` — a React/Vite app — or `ts-backend` — a
+   Node service). If ambiguous or empty, ask the user to choose `python`,
+   `ts-frontend`, `ts-backend`, or `none`.
 
 3. **Scaffold the files.** Run the engine, which never overwrites existing files:
    `bash "$ENGINE" . <stack>`
    Relay its `WRITTEN` / `SKIPPED` output to the user.
 
-4. **Install dependencies.** For `python`, use `uv` (the org standard, a fast
-   drop-in for pip that reads the same `requirements.txt`): create a venv and
-   install with
-   `uv venv && uv pip install -r requirements.txt -r requirements-dev.txt`.
-   If `uv` isn't installed, fall back to
-   `pip install -r requirements.txt -r requirements-dev.txt` in an active
-   virtualenv. Report the command and result; if the toolchain is unavailable,
-   skip and note it rather than failing.
+4. **Install dependencies.**
+   - **Python:** use `uv` (the org standard, a fast drop-in for pip that reads the
+     same `requirements.txt`): `uv venv && uv pip install -r requirements.txt -r requirements-dev.txt`.
+     Fall back to `pip install -r requirements.txt -r requirements-dev.txt` in an
+     active virtualenv if `uv` is absent.
+   - **ts-frontend / ts-backend:** run `npm install` (this generates
+     `package-lock.json` — remind the user to commit it, since the CI workflow uses
+     `npm ci`).
+   Report the command and result; if the toolchain is unavailable, skip and note it
+   rather than failing.
 
 5. **Flesh out CLAUDE.md.** The stub was just written. Ask the user for a
    one-or-two-line description of what this repo does, then fill in the
