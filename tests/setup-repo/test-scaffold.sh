@@ -12,7 +12,7 @@ for f in .claude/settings.json CLAUDE.md .claude/rules/security.md \
          .claude/rules/code-style.md .github/workflows/claude.yml \
          .github/workflows/claude-code-review.yml .github/workflows/ci.yml \
          .editorconfig pyproject.toml requirements.txt requirements-dev.txt \
-         .gitignore tests/.gitkeep; do
+         .gitignore tests/.gitkeep .pre-commit-config.yaml; do
   test -e "$TMP/$f" || { echo "MISSING: $f" >&2; exit 1; }
 done
 
@@ -41,6 +41,7 @@ for f in pyproject.toml requirements.txt requirements-dev.txt .gitignore \
          tests/.gitkeep .github/workflows/ci.yml; do
   test -e "$TMP_NONE/$f" && { echo "UNEXPECTED (none stack): $f" >&2; exit 1; }
 done
+test -e "$TMP_NONE/.pre-commit-config.yaml" && { echo "UNEXPECTED (none stack): .pre-commit-config.yaml" >&2; exit 1; }
 
 # scaffolded python defaults are internally consistent
 mkdir -p "$TMP/src"
@@ -84,7 +85,7 @@ bash "$ENGINE" "$TMP_TSF" ts-frontend
 for f in .claude/settings.json CLAUDE.md .editorconfig \
          package.json tsconfig.json eslint.config.js vite.config.ts .gitignore \
          index.html src/index.ts src/index.test.ts src/main.tsx .github/workflows/ci.yml \
-         .github/workflows/claude.yml; do
+         .github/workflows/claude.yml .pre-commit-config.yaml; do
   test -e "$TMP_TSF/$f" || { echo "MISSING (ts-frontend): $f" >&2; exit 1; }
 done
 for f in pyproject.toml requirements.txt requirements-dev.txt; do
@@ -100,7 +101,7 @@ trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS" "$TMP_TSF" "$TMP_TSB"' EXIT
 git -C "$TMP_TSB" init -q
 bash "$ENGINE" "$TMP_TSB" ts-backend
 for f in package.json tsconfig.json eslint.config.js vitest.config.ts .gitignore \
-         src/index.ts .github/workflows/ci.yml; do
+         src/index.ts .github/workflows/ci.yml .pre-commit-config.yaml; do
   test -e "$TMP_TSB/$f" || { echo "MISSING (ts-backend): $f" >&2; exit 1; }
 done
 grep -q '"react"' "$TMP_TSB/package.json" && { echo "ts-backend should not have react" >&2; exit 1; }
