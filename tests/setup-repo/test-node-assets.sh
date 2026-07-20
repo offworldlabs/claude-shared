@@ -44,3 +44,26 @@ echo "ts-frontend assets OK"
 check_stack_files "$STK/ts-backend"
 check_pkg "$STK/ts-backend" 0
 echo "ts-backend assets OK"
+
+CI="$ROOT/plugins/core/skills/setup-repo/assets/ci/ci-node.yml"
+python3 - "$CI" <<'EOF'
+import sys
+try:
+    import yaml
+except ModuleNotFoundError:
+    print("pyyaml missing; skipping ci-node YAML parse"); sys.exit(0)
+doc = yaml.safe_load(open(sys.argv[1]))
+on = doc.get("on", doc.get(True))
+assert on["push"]["branches"] == ["main"], on
+assert "pull_request" in on, on
+steps = doc["jobs"]["lint-and-test"]["steps"]
+uses = [str(s.get("uses", "")) for s in steps]
+assert any(u.startswith("actions/setup-node") for u in uses), uses
+runs = "\n".join(s.get("run", "") for s in steps)
+assert "npm ci" in runs, runs
+assert "npm run typecheck" in runs, runs
+assert "npm run lint" in runs, runs
+assert "npm test" in runs, runs
+print("ci-node.yml OK")
+EOF
+echo "node ci asset OK"
