@@ -47,8 +47,9 @@ interactive parts and the report.
 5. **Flesh out CLAUDE.md.** The stub was just written. Ask the user for a
    one-or-two-line description of what this repo does, then fill in the
    `Project Overview`, `Build & Test Commands`, and `Local Architecture`
-   sections from their answer plus what was scaffolded (stack, `ruff check .`,
-   `ruff format --check .`, `pytest`). If they skip, leave the stub as-is. Keep
+   sections from their answer plus what was scaffolded (stack; lint/format via
+   `pre-commit run --all-files`; tests via `pytest` or `npm test`). If they skip,
+   leave the stub as-is. Keep
    CLAUDE.md under the 200-line ceiling noted in the template.
 
 6. **Report and follow-ups.** Summarise files written vs skipped, then list the
