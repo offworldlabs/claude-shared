@@ -23,16 +23,26 @@ need_hygiene = {"trailing-whitespace", "end-of-file-fixer", "check-yaml",
 pr = by_repo(py)
 assert HYGIENE in pr, pr.keys()
 assert RUFF in pr, pr.keys()
+assert pr[HYGIENE]["rev"] == "v5.0.0", pr[HYGIENE].get("rev")
+assert pr[RUFF]["rev"] == "v0.8.0", pr[RUFF].get("rev")
 assert need_hygiene <= {h["id"] for h in pr[HYGIENE]["hooks"]}, pr[HYGIENE]
-assert {"ruff", "ruff-format"} <= {h["id"] for h in pr[RUFF]["hooks"]}, pr[RUFF]
+ruff_hooks = {h["id"]: h for h in pr[RUFF]["hooks"]}
+assert {"ruff", "ruff-format"} <= ruff_hooks.keys(), ruff_hooks
+assert ruff_hooks["ruff"].get("args") == ["--fix"], ruff_hooks["ruff"]
 print("python.yaml OK")
 
 tr = by_repo(ts)
 assert HYGIENE in tr, tr.keys()
+assert tr[HYGIENE]["rev"] == "v5.0.0", tr[HYGIENE].get("rev")
 assert need_hygiene <= {h["id"] for h in tr[HYGIENE]["hooks"]}, tr[HYGIENE]
 assert "local" in tr, tr.keys()
 local_hooks = tr["local"]["hooks"]
-assert any(h.get("id") == "eslint" and "eslint" in h.get("entry", "") for h in local_hooks), local_hooks
+eslint = next((h for h in local_hooks if h.get("id") == "eslint"), None)
+assert eslint is not None, local_hooks
+assert "npx eslint --fix" in eslint.get("entry", ""), eslint
+assert eslint.get("language") == "system", eslint
+assert eslint.get("types_or") == ["ts", "tsx"], eslint
+assert eslint.get("pass_filenames") is True, eslint
 print("ts.yaml OK")
 EOF
 echo "precommit assets OK"
