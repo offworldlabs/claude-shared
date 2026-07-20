@@ -36,6 +36,11 @@ interactive parts and the report.
    - **ts-frontend / ts-backend:** run `npm install` (this generates
      `package-lock.json` — remind the user to commit it, since the CI workflow uses
      `npm ci`).
+   - **pre-commit (python & ts stacks):** after the stack deps are installed,
+     register the git hook so the scaffolded `.pre-commit-config.yaml` runs on
+     every commit: `uvx pre-commit install` (or `pipx run pre-commit install`, or
+     `pip install pre-commit && pre-commit install`). Skip with a note if
+     pre-commit/uv is unavailable.
    Report the command and result; if the toolchain is unavailable, skip and note it
    rather than failing.
 
