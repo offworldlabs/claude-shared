@@ -104,4 +104,5 @@ for f in package.json tsconfig.json eslint.config.js vitest.config.ts .gitignore
   test -e "$TMP_TSB/$f" || { echo "MISSING (ts-backend): $f" >&2; exit 1; }
 done
 grep -q '"react"' "$TMP_TSB/package.json" && { echo "ts-backend should not have react" >&2; exit 1; }
+python3 -c "import json; json.load(open('$TMP_TSB/package.json'))"
 echo "ALL CHECKS PASSED"

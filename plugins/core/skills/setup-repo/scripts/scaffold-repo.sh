@@ -2,7 +2,7 @@
 # Deterministic file-scaffolding engine for the core:setup-repo skill.
 # Copies bundled assets into a target repo without clobbering existing files.
 # Usage: scaffold-repo.sh <target_dir> <stack>
-#   <stack>: python | none   (ts-frontend / ts-backend land in Phase 2)
+#   <stack>: python | ts-frontend | ts-backend | none
 set -euo pipefail
 
 TARGET="${1:?target dir required}"
