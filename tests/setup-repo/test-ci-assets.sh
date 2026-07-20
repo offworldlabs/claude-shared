@@ -18,8 +18,9 @@ assert on["push"]["branches"] == ["main"], on
 assert "pull_request" in on, on
 steps = doc["jobs"]["lint-and-test"]["steps"]
 runs = "\n".join(s.get("run", "") for s in steps)
-assert "ruff check ." in runs, runs
-assert "ruff format --check ." in runs, runs
+assert "pre-commit run --all-files" in runs, runs
+assert "ruff check ." not in runs, runs      # ruff now runs via pre-commit, not a direct CI step
+assert "ruff format --check ." not in runs, runs
 assert "pytest" in runs, runs
 assert "requirements.txt" in runs and "requirements-dev.txt" in runs, runs
 # org standard: install with uv, not pip
