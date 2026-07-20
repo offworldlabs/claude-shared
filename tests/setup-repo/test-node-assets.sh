@@ -40,3 +40,7 @@ check_stack_files() { # check_stack_files <dir>
 check_stack_files "$STK/ts-frontend"
 check_pkg "$STK/ts-frontend" 1
 echo "ts-frontend assets OK"
+
+check_stack_files "$STK/ts-backend"
+check_pkg "$STK/ts-backend" 0
+echo "ts-backend assets OK"
