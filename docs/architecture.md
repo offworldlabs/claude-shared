@@ -199,6 +199,22 @@ fronted by Cloudflare; both deploy via `git reset --hard origin/main` +
 `docker compose up -d --build` from GitHub Actions on push to `main`. The public
 marketing site is a separate static repo (`landing-page-retina`).
 
+### Live endpoints
+
+Hostnames seen in code/config, and what serves them. Treat as a pointer, not an
+authoritative inventory — deployment topology changes faster than this table.
+
+| Endpoint | Role |
+| --- | --- |
+| `radar3.retnode.com`, `sfo1.retnode.com` | Real production radar nodes (detection APIs) |
+| `api.retina.fm` | Central server REST/API surface |
+| `tower-finder.retina.fm` | `tower-finder-service` (illuminator site-survey) |
+| `towers.retina.fm` | Tower search API (queried by `retina-simulation` for TX coords) |
+| `map.retina.fm`, `dash`/`admin.retina.fm`, `testmap.retina.fm` | Central server live-map / dashboard SPAs |
+| `retina.fm` | Deployment / product portal |
+| `offworldlabs.com` | Marketing site (`landing-page-owl`) |
+| `owl.local` / `retina.local` | On-node `retina-gui` management UI (LAN) |
+
 ## 5. Repository map
 
 | Repo | Role | Stack |
@@ -221,3 +237,32 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `node-infra` | Central fleet automation (Mender auto-accept) | Python |
 | `landing-page-retina` | RETINA public marketing site | Static HTML |
 | `landing-page-owl` | Owl product landing page (placeholder/template at last survey) | Static HTML |
+| `docs` | Documentation container (passive-radar theory memo PDF + pointers) | Markdown, PDF |
+| `claude-shared` | Org-wide Claude Code resource: `core` plugin marketplace + shared reference docs (this repo) | Markdown, plugins |
+
+## 6. Cross-repo connection matrix
+
+Rows call/depend on columns. **Format** = detection/track/geolocation JSONL. **HW** =
+shares SDRplay hardware/libs. **compose** = deployed together. **lib** = vendored as a
+git submodule and imported in-process. **HTTP** = REST/proxy.
+
+| From ↓ / To → | blah2-arm | adsb2dd | tar1090-node | retina-spectrum | retina-tracker | retina-geolocator | retina-analytics | tower-finder-service |
+|---|---|---|---|---|---|---|---|---|
+| **retina-node** | compose | compose | compose | compose (excl.) | – | – | – | URL env |
+| **blah2-arm** | – | HTTP `/api/dd` | – | HW libs | Format (forward¹) | – | – | – |
+| **retina-gui** | HTTP :49152 | – | HTTP :8078 | SSE proxy :3020 | – | – | – | HTTP `/api/towers` |
+| **Tower-Finder** | bridge (radar3) | Format | – | – | lib (in-process²) | lib (in-process²) | lib | dup logic |
+| **retina-tracker** | Format (in) | Format (adsb) | – | – | – | Format (out) | – | – |
+| **retina-geolocator** | reads config.yml | – | – | – | Format (in) | – | Format (out) | – |
+| **retina-simulation** | – | – | – | – | Format→:3012 | – | – | towers API |
+| **retina-spectrum** | HW libs | – | – | – | – | – | – | HTTP profile |
+| **owl-os** | sysdeps | – | sysdeps | bundled? | – | – | – | – |
+| **node-infra** | via retina-node | via retina-node | via retina-node | via retina-node | – | – | – | URL passthrough |
+
+¹ The node→central detection forward is **config-gated** and was `disabled` on the
+production node surveyed (§2) — this hop is not necessarily live fleet-wide.
+
+² `retina-tracker` / `retina-geolocator` / `retina-analytics` run **inside** the central
+server as imported libraries (e.g. `_run_geolocation()` during frame processing), not as
+separate services or subprocesses. Their standalone TCP/Docker entry points exist only for
+each repo's own integration tests (§3).
