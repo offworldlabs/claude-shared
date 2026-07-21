@@ -19,28 +19,35 @@ geolocated aircraft shown on live web maps.
 
 Three tiers plus external inputs and an out-of-band control plane:
 
-```
- External illuminators (broadcast TV/FM towers)  ─ reflections ─┐
- ADS-B (readsb / adsb.lol / tar1090) ── ground-truth ──┐        │
-                                                        ▼        ▼
-   ┌──────────────────────── EDGE RADAR NODE (Raspberry Pi 5) ───────────────┐
-   │  owl-os (Mender-managed OS)  +  retina-node docker-compose stack         │
-   │    blah2 (C++ SDR DSP) → detections   adsb2dd (truth)   tar1090 (ADS-B)  │
-   │    retina-gui (node mgmt UI)          [retina-spectrum: illuminator survey]│
-   └──────────────────────────────┬──────────────────────────────────────────┘
-                                   │  detections over TCP (per-node token)
-                                   ▼
-   ┌──────────────────────── CENTRAL SERVER (cloud droplet) ─────────────────┐
-   │  "Tower-Finder" monorepo = the RETINA server                            │
-   │    FastAPI backend (TCP ingest + tracker + geolocator + analytics)      │
-   │    nginx + live-map SPA + admin dashboard  →  map/dash/api.retina.fm    │
-   │  tower-finder-service (illuminator site-survey utility, adjacent)       │
-   └──────────────────────────────┬──────────────────────────────────────────┘
-                                   │  /ws/aircraft* WebSocket + REST
-                                   ▼
-                        Web clients (live map, dashboard)
+```mermaid
+flowchart TB
+  illum([Broadcast TV/FM towers · illuminators])
+  adsb([ADS-B · readsb / adsb.lol / tar1090])
 
- Control plane (out of band): hosted.mender.io  ← fleet OTA for OS + app stack
+  subgraph node["Edge radar node — Raspberry Pi 5"]
+    os[owl-os · Mender-managed OS]
+    subgraph stack["retina-node docker-compose stack"]
+      blah[blah2 · C++ SDR DSP → detections]
+      a2d[adsb2dd · truth]
+      tar[tar1090 · ADS-B]
+      gui[retina-gui · node mgmt UI]
+      spec[retina-spectrum · illuminator survey]
+    end
+  end
+
+  subgraph central["Central server — cloud droplet"]
+    tf["Tower-Finder = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + live-map SPA + admin dashboard"]
+    tfs[tower-finder-service · site-survey utility]
+  end
+
+  web([Web clients · map / dash / api.retina.fm])
+  mender([hosted.mender.io · fleet OTA control plane])
+
+  illum -->|reflections| blah
+  adsb -->|ground truth| tar
+  node -->|detections over TCP · per-node token| central
+  central -->|/ws/aircraft* WebSocket + REST| web
+  mender -.->|OS + app OTA · out of band| node
 ```
 
 - **Edge radar node** — a Raspberry Pi 5 running `owl-os` with the `retina-node`
@@ -59,13 +66,20 @@ Three tiers plus external inputs and an out-of-band control plane:
 The production flow runs from an SDR at the edge to the live map, with the
 tracker and geolocator running as libraries **inside** the central server:
 
-```
-SDR (RSPduo) → blah2 C++ processor → blah2 Node API (:3000 /api/detection …)
-                                        ↑ ADS-B truth from adsb2dd (:49155 /api/dd)
-                                             ↑ adsb2dd polls a tar1090 /data/aircraft.json
-   → detections forwarded over TCP to the central server
-   → central tracker (Kalman + GNN) → central geolocator (Levenberg-Marquardt, multi-node)
-   → in-memory track state → /ws/aircraft* WebSocket → live map SPA
+```mermaid
+flowchart LR
+  tar[tar1090<br/>/data/aircraft.json] -->|ADS-B| a2d[adsb2dd :49155<br/>/api/dd]
+  sdr[SDR · RSPduo] --> blah[blah2 C++ processor]
+  blah --> api[blah2 Node API :3000<br/>/api/detection]
+  a2d -->|truth| api
+  api -->|detections over TCP · config-gated| trk
+
+  subgraph central["inside Tower-Finder — in-process libraries"]
+    trk[tracker · Kalman + GNN] --> geo[geolocator · Levenberg-Marquardt, multi-node]
+    geo --> state[in-memory track state]
+  end
+
+  state -->|/ws/aircraft* WebSocket| map[live map SPA]
 ```
 
 **Caveat — the node→central forward is config-gated.** The "forwarded over TCP to
@@ -199,6 +213,22 @@ fronted by Cloudflare; both deploy via `git reset --hard origin/main` +
 `docker compose up -d --build` from GitHub Actions on push to `main`. The public
 marketing site is a separate static repo (`landing-page-retina`).
 
+### Live endpoints
+
+Hostnames seen in code/config, and what serves them. Treat as a pointer, not an
+authoritative inventory — deployment topology changes faster than this table.
+
+| Endpoint | Role |
+| --- | --- |
+| `radar3.retnode.com`, `sfo1.retnode.com` | Real production radar nodes (detection APIs) |
+| `api.retina.fm` | Central server REST/API surface |
+| `tower-finder.retina.fm` | `tower-finder-service` (illuminator site-survey) |
+| `towers.retina.fm` | Tower search API (queried by `retina-simulation` for TX coords) |
+| `map.retina.fm`, `dash`/`admin.retina.fm`, `testmap.retina.fm` | Central server live-map / dashboard SPAs |
+| `retina.fm` | Deployment / product portal |
+| `offworldlabs.com` | Marketing site (`landing-page-owl`) |
+| `owl.local` / `retina.local` | On-node `retina-gui` management UI (LAN) |
+
 ## 5. Repository map
 
 | Repo | Role | Stack |
@@ -221,3 +251,86 @@ marketing site is a separate static repo (`landing-page-retina`).
 | `node-infra` | Central fleet automation (Mender auto-accept) | Python |
 | `landing-page-retina` | RETINA public marketing site | Static HTML |
 | `landing-page-owl` | Owl product landing page (placeholder/template at last survey) | Static HTML |
+| `docs` | Documentation container (passive-radar theory memo PDF + pointers) | Markdown, PDF |
+| `claude-shared` | Org-wide Claude Code resource: `core` plugin marketplace + shared reference docs (this repo) | Markdown, plugins |
+
+## 6. Cross-repo connections
+
+Two views of how the repos wire together — **runtime data/API calls**, and
+**build/deploy/hardware coupling**. The exhaustive who-calls-whom matrix is kept
+collapsed below as the precise reference (it also records where repos *don't* connect).
+
+### Runtime data & API calls
+
+```mermaid
+flowchart LR
+  subgraph edge["Edge node (retina-node compose)"]
+    tar[tar1090-node]
+    a2d[adsb2dd]
+    blah[blah2-arm]
+    spec[retina-spectrum]
+    gui[retina-gui]
+  end
+  subgraph central["Central server — Tower-Finder (libs in-process)"]
+    trk[retina-tracker] --> geo[retina-geolocator] --> ana[retina-analytics]
+  end
+  sim[retina-simulation]
+  tfs[tower-finder-service]
+
+  tar -->|ADS-B JSON| a2d
+  a2d -->|/api/dd truth| blah
+  gui -->|:49152| blah
+  gui -->|:8078| tar
+  gui -->|:3020 SSE| spec
+  blah -->|detections :3012 · config-gated| central
+  sim -->|synthetic detections :3012| central
+  central -->|bridge poll radar3| blah
+  gui -->|/api/towers| tfs
+  spec -->|measurements| tfs
+  central -->|dup ranking logic| tfs
+```
+
+### Build / deploy / hardware coupling
+
+```mermaid
+flowchart LR
+  ni[node-infra] -->|auto-accept + OTA| rn[retina-node]
+  rn -->|compose images| blah[blah2-arm]
+  rn -->|compose| a2d[adsb2dd]
+  rn -->|compose| tar[tar1090-node]
+  rn -->|compose profile| spec[retina-spectrum]
+  os[owl-os] -->|sysdeps + bundles| gui[retina-gui]
+  os -->|SDRplay API + watchdog| blah
+  blah <-->|shared SDRplay libs · RSPduo exclusive| spec
+  tf[Tower-Finder] -.->|vendors as git submodules| libs["retina-tracker / -geolocator /<br/>-analytics / -custody / -simulation"]
+```
+
+<details>
+<summary><b>Exhaustive connection matrix</b> — every edge, including where repos don't connect</summary>
+
+Rows call/depend on columns. **Format** = detection/track/geolocation JSONL. **HW** =
+shares SDRplay hardware/libs. **compose** = deployed together. **lib** = vendored as a
+git submodule and imported in-process. **HTTP** = REST/proxy.
+
+| From ↓ / To → | blah2-arm | adsb2dd | tar1090-node | retina-spectrum | retina-tracker | retina-geolocator | retina-analytics | tower-finder-service |
+|---|---|---|---|---|---|---|---|---|
+| **retina-node** | compose | compose | compose | compose (excl.) | – | – | – | URL env |
+| **blah2-arm** | – | HTTP `/api/dd` | – | HW libs | Format (forward¹) | – | – | – |
+| **retina-gui** | HTTP :49152 | – | HTTP :8078 | SSE proxy :3020 | – | – | – | HTTP `/api/towers` |
+| **Tower-Finder** | bridge (radar3) | Format | – | – | lib (in-process²) | lib (in-process²) | lib | dup logic |
+| **retina-tracker** | Format (in) | Format (adsb) | – | – | – | Format (out) | – | – |
+| **retina-geolocator** | reads config.yml | – | – | – | Format (in) | – | Format (out) | – |
+| **retina-simulation** | – | – | – | – | Format→:3012 | – | – | towers API |
+| **retina-spectrum** | HW libs | – | – | – | – | – | – | HTTP profile |
+| **owl-os** | sysdeps | – | sysdeps | bundled? | – | – | – | – |
+| **node-infra** | via retina-node | via retina-node | via retina-node | via retina-node | – | – | – | URL passthrough |
+
+¹ The node→central detection forward is **config-gated** and was `disabled` on the
+production node surveyed (§2) — this hop is not necessarily live fleet-wide.
+
+² `retina-tracker` / `retina-geolocator` / `retina-analytics` run **inside** the central
+server as imported libraries (e.g. `_run_geolocation()` during frame processing), not as
+separate services or subprocesses. Their standalone TCP/Docker entry points exist only for
+each repo's own integration tests (§3).
+
+</details>

@@ -36,6 +36,9 @@ point at these rather than duplicating them, so there's one source of truth.
 - **`docs/architecture.md`** — the org-wide system architecture: the RETINA
   passive-radar network's tiers, signal chain, components, and deployment/fleet
   lifecycle. Start here to understand how the repos fit together.
+- **`docs/cross-cutting-changes.md`** — "I need to change X, where do I look?": a
+  blast-radius guide for edits that span multiple repos (shared contracts, config,
+  hardware, deployment).
 
 And each subdirectory:
 
