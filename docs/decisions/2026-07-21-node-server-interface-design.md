@@ -1,7 +1,9 @@
 # Node ↔ Server Interface Design
 
 - **Date:** 2026-07-21; revised 2026-07-23 after priorities were refined, an ADS-B
-  prior-art survey (§10) and on-node measurements.
+  prior-art survey (§10) and on-node measurements; corrected 2026-07-24 (blah2 IQ buffer
+  duration and `saveIq` rate, with knock-on to the ring-buffer size; downlink command
+  integrity added to §6).
 - **Status:** Proposed (design agreed in discussion; implementation not started)
 - **Scope:** How RETINA radar nodes communicate with the central server, phased: phase 1
   delivers live detections from up to ~50 nodes over HTTPS; the archive/bulk plane and the
@@ -128,13 +130,15 @@ gaps, since a node can keep snapshotting while its upload path is broken; upload
 rate-shaped below the node's uplink so a capture in flight does not starve the live plane or
 the node's apparent liveness; write-once objects and contested-hour adjudication per D13.
 
-Today's IQ path, for context: blah2 holds ~1.5 s of IQ in RAM (`process.data.buffer`),
-consumes it in 0.5 s CPIs through clutter filtering, the ambiguity map and CFAR into
-detections and its own tracker, and discards it; measured on a live node the whole
-pipeline runs at ~760 MB RSS. The only raw capture that exists is blah2's `saveIq` toggle
-(polled from its API once a second), which streams IQ forward to the SD card at ~8 MB/s
-until switched off: no retrospective window, and unbounded SD writes while on (§11). The
-retina-custody 120 s ring buffer is not deployed.
+Today's IQ path, for context: blah2 holds ~0.75 s of IQ in RAM (`process.data.buffer` is
+1.5 in units of CPIs, not seconds: the buffer is sized `cpi × buffer × fs` at
+`blah2-arm/src/blah2.cpp:103`), consumes it in 0.5 s CPIs through clutter filtering, the
+ambiguity map and CFAR into detections and its own tracker, and discards it; measured on a
+live node the whole pipeline runs at ~760 MB RSS. The only raw capture that exists is
+blah2's `saveIq` toggle (polled from its API once a second), which streams raw int16 I/Q
+for both channels to the SD card at ~16 MB/s until switched off: no retrospective window,
+and unbounded SD writes while on (§11). The retina-custody 120 s ring buffer is not
+deployed.
 
 Two constraints recorded now so the future design starts from them:
 
@@ -145,11 +149,12 @@ Two constraints recorded now so the future design starts from them:
   shows no swap configured (§3); keep it that way, since owl-os sets nothing about swap
   and a future base image could reintroduce a swapfile, converting memory pressure into
   the same wear invisibly.
-- **IQ versus Doppler map.** 120 s of real IQ is ~960 MB (§3) and does not fit in 2 GB
-  alongside the OS and radar processing; `iq_buffer.py` defaults to synthetic 1 KB chunks
+- **IQ versus Doppler map.** 120 s of real IQ is ~1.9 GB (§3), more than a 2 GB node's
+  total RAM and, alongside blah2's ~760 MB, not fitting the 4 GB minority either;
+  `iq_buffer.py` defaults to synthetic 1 KB chunks
   and only `retina-simulation` instantiates the buffer, so the real path has never run on
   node hardware. The candidate replacement is the delay-Doppler map blah2 already computes
-  each CPI (~650 kB as JSON, §3): a 120 s window is ~240 maps ≈ 156 MB as JSON, roughly 6×
+  each CPI (~650 kB as JSON, §3): a 120 s window is ~240 maps ≈ 156 MB as JSON, roughly 12×
   smaller than the IQ and considerably better once binary-encoded and compressed, and
   small enough that a rolling RAM buffer of maps fits in 2 GB. That restores the
   retrospective capture window this hardware cannot afford for raw IQ (and which the
@@ -158,8 +163,9 @@ Two constraints recorded now so the future design starts from them:
   bulk plane. The trade-off: a map cannot be re-processed with different parameters after
   the fact, and the raw-evidence forensic character of IQ is lost. The map is the working
   assumption; IQ returns only if analysis of real captured maps proves them insufficient
-  (§6 item 4). blah2's forward-only `saveIq` toggle is excluded from the design either
-  way: streaming ~8 MB/s to the SD card conflicts with the wear budget.
+  (§6 item 5). blah2's forward-only `saveIq` toggle is excluded from the design either
+  way: streaming ~16 MB/s to the SD card conflicts with the wear budget and would fill
+  the 64 GB card in about an hour.
 
 ### 2.4 Control/identity plane
 
@@ -201,7 +207,7 @@ Two constraints recorded now so the future design starts from them:
 | Phase 1 ingest at 50 nodes | ~100 req/s, ~30 kB/s | derived |
 | Fleet ingest at 5,000 nodes | ~3 MB/s aggregate; connection and request count is the scaling dimension, not bandwidth | derived |
 | Node RAM | Mixed fleet: 8 of 11 sampled nodes at 2 GB, 3 at 4 GB; available RAM 575 MB min, 892 MB median, 2,485 MB max; blah2 ~760 MB RSS; no swap on any node | fleet probe via Mender terminal, 11 nodes, 2026-07-23 |
-| IQ ring buffer | 120 s (`DEFAULT_BUFFER_DURATION_S`); ~960 MB real (120 s × 2 MHz × 2 ch × 2 B); code defaults to synthetic 1 KB chunks | `retina-custody/retina_custody/iq_buffer.py:36-40` |
+| IQ ring buffer | 120 s (`DEFAULT_BUFFER_DURATION_S`); ~1.9 GB real (120 s × 2 MHz × 2 ch × 4 B int16 I+Q, the 16 MB/s `saveIq` rate); code defaults to synthetic 1 KB chunks | `retina-custody/retina_custody/iq_buffer.py:36-40`; sample format `blah2-arm/src/capture/rspduo/RspDuo.cpp:630` |
 | Delay-Doppler map size | ~650 kB (JSON) per map | measured from `radar3.retnode.com/api/map`, 2026-07-22 |
 | Hourly archive compression | ~4.3× (gzip -9; zstd should do better) | measured on a synthetic hour |
 | Archive volume | ~11 MB/day/node | derived |
@@ -347,12 +353,18 @@ Phase 1:
 2. **Message schemas**: snapshot frame, command enum, config report and health telemetry
    in `claude-shared/docs/contracts/` before implementation (D14).
 3. **Protobuf now or JSONL first** (D11). Tripwires for moving: adopting any
-   traffic-metered broker plan (item 5), the fleet passing a few hundred nodes, or the
+   traffic-metered broker plan (item 6), the fleet passing a few hundred nodes, or the
    schemas stabilising after phase 1; until one fires, JSONL stands.
+4. **Downlink command integrity.** Uplink frames carry custody signatures; commands are
+   protected only by TLS, which terminates at Cloudflare's edge (D12), so command
+   integrity rests on trusting Cloudflare. The allow flags and the small command enum
+   bound the damage for now. If that seems thin once real commands ship, sign commands
+   with a server key pinned on the node, making the downlink's integrity story symmetric
+   with the uplink's.
 
 Medium term:
 
-4. **The map-sufficiency falsification test** (§2.3). The delay-Doppler map is assumed
+5. **The map-sufficiency falsification test** (§2.3). The delay-Doppler map is assumed
    sufficient until proven otherwise; define which analyses would demand raw IQ, run them
    on real captured maps, and reopen IQ capture only if one fails. While the assumption
    holds, the bulk plane shrinks several-fold (more once binary-encoded) and the RAM
@@ -360,7 +372,7 @@ Medium term:
 
 When the broker returns (§2.2):
 
-5. **Managed MQTT vendor.** Evaluate on price at 1k/5k nodes, the per-node credential and
+6. **Managed MQTT vendor.** Evaluate on price at 1k/5k nodes, the per-node credential and
    ACL provisioning API, mTLS versus token auth (serverless tiers are often token-only),
    MQTT 5 shared-subscription, session-expiry and message-expiry support, documented DDoS
    mitigation and connection-rate limiting (D12), and region options. Cost snapshot as of
@@ -382,18 +394,18 @@ When the broker returns (§2.2):
    arbitrary consumer IPs; or MQTT over WebSocket on 443 through the normal Cloudflare proxy
    with the broker origin behind its own Tunnel, which buys Cloudflare's mitigation and a
    zero-inbound broker but terminates TLS at the edge, so per-node mTLS gives way to token
-   auth (item 6). Per-node `cloudflared access tcp` tunnels would be an overlay network in
+   auth (item 7). Per-node `cloudflared access tcp` tunnels would be an overlay network in
    effect and are set aside with the overlays in D2.
-6. **Broker credential format**: mTLS client certs or broker-issued tokens, either way
+7. **Broker credential format**: mTLS client certs or broker-issued tokens, either way
    subordinate to and replaceable via the custody key (§2.4).
 
 When the archive returns:
 
-7. **Retention and cap parameters**, node side and R2 side (the R2 archive grows ~55 GB/day
+8. **Retention and cap parameters**, node side and R2 side (the R2 archive grows ~55 GB/day
    at 5,000 nodes; decide retention and who deletes captures after analysis).
-8. **Upload-slot throttling**: start unthrottled, monitor R2 cost, ration presigned URLs if
+9. **Upload-slot throttling**: start unthrottled, monitor R2 cost, ration presigned URLs if
    needed.
-9. **D13 mechanics and timing**: fingerprint at ingest from day one or deferred; the
+10. **D13 mechanics and timing**: fingerprint at ingest from day one or deferred; the
    checksum flow through the presign API. Tripwire: decide before the first bulk-plane
    implementation change, since the checksum flow must be in the presign API from its
    first version and retrofitting write-once touches node retry logic.
@@ -491,7 +503,7 @@ Key sources: the piaware repository (adept client, `update.tcl`), the readsb REA
    with node-local tracklet IDs, giving the server smoothing hints without losing the
    measurements. Unresolved.
 2. Which analyses would demand raw IQ rather than the delay-Doppler map? The map is
-   assumed sufficient (§2.3, §6 item 4); this question is the falsification list for that
+   assumed sufficient (§2.3, §6 item 5); this question is the falsification list for that
    assumption.
 3. How command execution results are reported. The §2.1 acknowledgement only proves the
    node *received* a command; execution can then fail (disk full, radar stopped), succeed
