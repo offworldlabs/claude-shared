@@ -1,0 +1,245 @@
+/* ============================================================================
+   Offworld Labs / RETINA — design tokens
+   ----------------------------------------------------------------------------
+   A snapshot of the values the existing sites use, gathered into one place so a
+   new page can start from them instead of re-deriving colours and fonts by eye.
+
+   This describes what the four surfaces do TODAY, not a target design. Where
+   the sites disagree (see docs/brand/brand-guide.md §"Improvements, gaps &
+   discrepancies") this file keeps the disagreement visible rather than papering
+   over it: the shared spine lives in :root, and each surface's own values live
+   in a class you add to <body>.
+
+   Usage:
+     <body class="retina"> … </body>          // pick owl | retina | dash | map
+     colour: var(--ink);
+     background: var(--canvas);
+
+   The token NAMES here are unified (the live sites each use their own naming —
+   --ink/--paper on owl, --text/--bg on retina, --bg-primary/--text-primary on
+   dash). A page built from this file gets one vocabulary across all three.
+============================================================================ */
+
+:root {
+  /* — Type registers (families are set per-surface below) ————————————— */
+  --font-display: Georgia, 'Times New Roman', serif;   /* headings */
+  --font-body:    system-ui, sans-serif;               /* running text, UI */
+  --font-mono:    ui-monospace, monospace;             /* labels, data, code */
+
+  /* Base rhythm shared by every surface */
+  --text-base:   16px;
+  --leading:     1.6;
+
+  /* — Semantic colours ————————————————————————————————————————————————
+     The marketing surfaces (owl, retina) use these values. The console (dash)
+     shifts to a slate-native set; see the .dash block. Kept as one role each so
+     the radar legend and status pills stay legible across surfaces. */
+  --success:      #16a34a;   /* "live", ADS-B truth, healthy */
+  --success-wash: rgba(22, 163, 74, 0.10);
+  --warning:      #d97706;   /* echo, anomaly, attention */
+  --warning-wash: rgba(217, 119, 6, 0.10);
+  --danger:       #dc2626;   /* error/failure (only dash uses it today) */
+  --danger-wash:  rgba(220, 38, 38, 0.10);
+
+  /* — Hairlines & shape (per-surface radii below) ————————————————————— */
+  --border-width: 1px;
+
+  /* — Motion ————————————————————————————————————————————————————————————
+     Reveal-on-scroll, a slow pulse for "live" dots, and a dashed march for the
+     radar signal paths. Wrap any of these in @media (prefers-reduced-motion:
+     reduce) when you use them; the live sites do not, which the guide flags. */
+  --reveal-duration: 0.45s;
+  --pulse-duration:  2s;
+}
+
+/* ============================================================================
+   owl — offworldlabs.com  (the lab / parent)
+   Editorial restraint: warm paper, muted blue, light-weight serif headings,
+   crisp small radii, flat controls.
+============================================================================ */
+.owl {
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  --canvas:       #f7f6f2;   /* paper */
+  --canvas-sunk:  #edecea;   /* paper-2 */
+  --surface:      #ffffff;
+
+  --ink:          #0e0e0c;
+  --ink-muted:    #444440;
+  --ink-subtle:   #888882;
+
+  --accent:        #5b8dd9;  /* soft, desaturated */
+  --accent-strong: #4a7cc8;  /* darker for hover (derived) */
+  --accent-wash:   rgba(91, 141, 217, 0.15);
+
+  --border:        rgba(14, 14, 12, 0.10);
+  --border-strong: rgba(14, 14, 12, 0.20);
+
+  --radius:    4px;
+  --radius-sm: 3px;
+  --radius-lg: 6px;
+
+  --heading-weight: 400;     /* light, editorial */
+}
+
+/* ============================================================================
+   retina — retina.fm  (the product)
+   Commercial energy: warm paper, punchy blue, bolder expressive serif, softer
+   radii, buttons that lift on hover, one dark section.
+============================================================================ */
+.retina {
+  --font-display: 'Fraunces', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --canvas:       #fafaf9;
+  --canvas-sunk:  #f5f4f0;   /* bg-warm */
+  --surface:      #ffffff;
+  --canvas-dark:  #090904;   /* the dark features section */
+  --surface-dark: #242422;
+
+  --ink:          #1a1a18;
+  --ink-muted:    #6b6b63;
+  --ink-subtle:   #9c9c93;
+
+  --accent:        #2563eb;  /* saturated */
+  --accent-strong: #3b82f6;  /* accent-light, used for hovers/highlights */
+  --accent-wash:   rgba(37, 99, 235, 0.06);
+  --accent-border: rgba(37, 99, 235, 0.15);
+
+  --border:        #e8e8e3;
+  --border-strong: #f0f0eb;  /* the site calls this border-light */
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+
+  --heading-weight: 600;     /* product-bold */
+}
+
+/* ============================================================================
+   dash — dash.retina.fm  (the admin console)
+   Utilitarian ops tool: cool slate, brighter blue, system fonts (no brand
+   typefaces), dense tables, the full success/warning/error set.
+============================================================================ */
+.dash {
+  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    'SF Mono', 'Fira Code', monospace;
+
+  --canvas:       #f1f5f9;   /* slate-100, cool not warm */
+  --canvas-sunk:  #f8fafc;   /* slate-50 */
+  --surface:      #ffffff;
+
+  --ink:          #0f172a;   /* slate-900 */
+  --ink-muted:    #475569;   /* slate-600 */
+  --ink-subtle:   #94a3b8;   /* slate-400 */
+
+  --accent:        #3b82f6;  /* blue-500, one step lighter than retina at rest */
+  --accent-strong: #2563eb;  /* blue-600 hover — matches retina's resting blue */
+  --accent-wash:   rgba(59, 130, 246, 0.10);
+
+  /* Console semantics run one shade off the marketing set (Tailwind-native) */
+  --success:      #10b981;   /* emerald-500 */
+  --success-wash: rgba(16, 185, 129, 0.10);
+  --warning:      #f59e0b;   /* amber-500 */
+  --warning-wash: rgba(245, 158, 11, 0.10);
+  --danger:       #ef4444;   /* red-500 */
+  --danger-wash:  rgba(239, 68, 68, 0.10);
+
+  --border:        #e2e8f0;  /* slate-200 */
+  --border-strong: #cbd5e1;  /* slate-300 */
+
+  --radius:    8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;
+
+  --heading-weight: 700;
+
+  --sidebar-width: 250px;
+  --header-height: 56px;
+}
+
+/* ============================================================================
+   map — map.retina.fm  (the live radar console)
+   The only DARK surface. A Flightradar24-style operational map: deep navy
+   chrome, a single Inter UI font (no serif, no branded mono), a brighter
+   sky-blue accent plus an amber selection highlight, tight small radii,
+   blue-tinted translucent hairlines, backdrop-blur panels over the map.
+
+   Because the canvas is dark and the ink is light, --btn-primary (ink on
+   canvas) reads as a light button on dark — the inverse of the other three.
+============================================================================ */
+.map {
+  --font-display: 'Inter', system-ui, sans-serif;   /* no serif here */
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;           /* generic; hex badges only */
+
+  --canvas:       #0d1b2a;   /* app / map root */
+  --canvas-sunk:  #0f2035;   /* left sidebar */
+  --surface:      #132240;   /* toolbar / panel body */
+
+  --ink:          #e2e8f0;   /* light slate */
+  --ink-muted:    #94a3b8;
+  --ink-subtle:   #64748b;
+
+  --accent:        #38bdf8;  /* brighter sky-blue than the other surfaces */
+  --accent-strong: #7dd3fc;  /* light-sky, for badges/hovers */
+  --accent-wash:   rgba(56, 189, 248, 0.15);
+  --accent-select: #fbbf24;  /* amber — selected aircraft / focus glow */
+
+  /* Dark-surface semantics (brighter so they carry on navy) */
+  --success:      #4ade80;
+  --success-wash: rgba(74, 222, 128, 0.15);
+  --warning:      #fbbf24;
+  --warning-wash: rgba(251, 191, 36, 0.15);
+  --danger:       #f43f5e;
+  --danger-wash:  rgba(244, 63, 94, 0.15);
+
+  --border:        rgba(100, 180, 255, 0.12);  /* blue-tinted hairline */
+  --border-strong: rgba(100, 180, 255, 0.22);
+
+  --radius:    6px;
+  --radius-sm: 3px;
+  --radius-lg: 10px;
+
+  --heading-weight: 700;
+
+  /* Data-viz colours are NOT UI chrome and live in the map code, but the two
+     that a legend or overlay might reuse: "truth" is teal/cyan, not green, and
+     radar detections run a Doppler gradient rather than a single colour. */
+  --data-truth:  #2dd4bf;   /* solver + ADS-B agreement (teal) */
+  --data-adsb:   #22d3ee;   /* ground-truth dot (cyan) */
+}
+
+/* ============================================================================
+   Shared idioms
+   The one convention every surface reuses verbatim: the mono micro-label.
+   Uppercase, tracked out, muted. Section eyebrows, stat labels, table headers,
+   nav-section titles are all this.
+============================================================================ */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
+
+/* Reveal-on-scroll. Toggle .is-visible from an IntersectionObserver. */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--reveal-duration) ease,
+              transform var(--reveal-duration) ease;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
