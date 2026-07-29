@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand tokens preview — owl / retina / dash</title>
+
+<!-- Fonts the marketing surfaces use (tokens.css sets the families; it does not
+     load them). The console uses the system stack, so it needs no link. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300..700&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&family=Fraunces:opsz,wght@9..144,300..800&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- The thing under test -->
+<link rel="stylesheet" href="tokens.css">
+
+<style>
+  /* Page chrome only. Everything below the .surface panels is driven purely by
+     token values, so the three columns differ ONLY because the surface class
+     differs. If the starter reproduces the look, the columns should feel like
+     owl / retina / dash without any per-surface CSS here. */
+  body {
+    margin: 0;
+    background: #d8d8d4;
+    font-family: system-ui, sans-serif;
+  }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    min-height: 100vh;
+  }
+  @media (max-width: 1200px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  { .board { grid-template-columns: 1fr; } }
+
+  /* A surface panel paints itself from its own tokens. */
+  .surface {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: var(--leading);
+    padding: 2.5rem 2rem 3.5rem;
+  }
+
+  .surface .tag {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .surface h1 {
+    font-family: var(--font-display);
+    font-weight: var(--heading-weight);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .surface .lede { color: var(--ink-muted); font-size: 1rem; margin: 0 0 1.75rem; max-width: 36ch; }
+
+  .block { margin-top: 2rem; }
+  .block > .label { display: block; margin-bottom: 0.9rem; }   /* .label from tokens.css */
+
+  /* Buttons, token-driven and identical markup across surfaces. */
+  .btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-family: var(--font-body); font-size: .85rem; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: var(--border-width) solid transparent;
+    padding: .6rem 1.1rem; border-radius: var(--radius);
+  }
+  .btn-primary { background: var(--ink); color: var(--canvas); }
+  .btn-accent  { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; color: var(--ink); border-color: var(--border-strong); }
+
+  /* Card — border + radius + surface all come from tokens. */
+  .card {
+    background: var(--surface);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.25rem 1.4rem;
+    margin-top: .9rem;
+  }
+  .card h3 { font-family: var(--font-display); font-weight: var(--heading-weight); font-size: 1.05rem; margin: 0 0 .35rem; }
+  .card p  { color: var(--ink-muted); font-size: .875rem; margin: 0; }
+
+  /* Fact rows on hairlines. */
+  .facts { margin-top: .5rem; }
+  .fact { display: flex; justify-content: space-between; align-items: baseline;
+          padding: .7rem 0; border-bottom: var(--border-width) solid var(--border); gap: 1rem; }
+  .fact:first-child { border-top: var(--border-width) solid var(--border); }
+  .fact .k { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em; color: var(--ink-subtle); }
+  .fact .v { font-size: .875rem; }
+
+  /* Status pills from the semantic tokens. */
+  .pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .pill {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .03em;
+    padding: .3rem .7rem; border-radius: 999px;
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pill.ok   { background: var(--success-wash); color: var(--success); }
+  .pill.ok   .dot { background: var(--success); }
+  .pill.warn { background: var(--warning-wash); color: var(--warning); }
+  .pill.warn .dot { background: var(--warning); }
+  .pill.err  { background: var(--danger-wash);  color: var(--danger); }
+  .pill.err  .dot { background: var(--danger); }
+
+  /* Accent + canvas swatches. */
+  .swatches { display: flex; gap: .5rem; margin-top: .9rem; }
+  .sw { flex: 1; height: 46px; border-radius: var(--radius-sm); border: var(--border-width) solid var(--border);
+        font-family: var(--font-mono); font-size: .55rem; color: var(--ink-subtle); padding: .3rem; }
+  .sw.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .sw.wash   { background: var(--accent-wash); }
+  .sw.sunk   { background: var(--canvas-sunk); }
+</style>
+</head>
+<body>
+  <div class="board">
+
+    <!-- Each panel picks ONE surface class; nothing else changes. -->
+    <section class="surface owl">
+      <div class="tag">offworldlabs.com · .owl</div>
+      <h1>Building the instruments science is missing.</h1>
+      <p class="lede">Open-source passive radar infrastructure for scientific research.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-primary">Deploy a Node →</a>
+        <a class="btn btn-outline">Read the science ↗</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>RETINA</h3><p>Radio Echo Tracking by Inter-Node Analysis.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Range</span><span class="v">35+ mi</span></div>
+          <div class="fact"><span class="k">Bands</span><span class="v">VHF / UHF</span></div>
+          <div class="fact"><span class="k">License</span><span class="v">Open source</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>live</span>
+          <span class="pill warn"><span class="dot"></span>echo</span>
+          <span class="pill err"><span class="dot"></span>error</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+    <section class="surface retina">
+      <div class="tag">retina.fm · .retina</div>
+      <h1>See the sky with radio echoes.</h1>
+      <p class="lede">A distributed passive radar network built on TV and radio signals.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-accent">Order a node kit</a>
+        <a class="btn btn-outline">View source</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>Passive detection</h3><p>No transmitter, no license. VHF/UHF broadcasts as illumination.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Range</span><span class="v">35 mi</span></div>
+          <div class="fact"><span class="k">Bands</span><span class="v">VHF / UHF</span></div>
+          <div class="fact"><span class="k">Open source</span><span class="v">100%</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>live</span>
+          <span class="pill warn"><span class="dot"></span>echo</span>
+          <span class="pill err"><span class="dot"></span>error</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+    <section class="surface dash">
+      <div class="tag">dash.retina.fm · .dash</div>
+      <h1>Fleet overview</h1>
+      <p class="lede">Node health, detections, and network status for logged-in operators.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-accent">Add node</a>
+        <a class="btn btn-outline">Export</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>node-atl-03</h3><p>Last seen 12s ago · 1,204 detections today.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Uptime</span><span class="v">99.4%</span></div>
+          <div class="fact"><span class="k">Reputation</span><span class="v">0.87</span></div>
+          <div class="fact"><span class="k">Frames/s</span><span class="v">770</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>healthy</span>
+          <span class="pill warn"><span class="dot"></span>degraded</span>
+          <span class="pill err"><span class="dot"></span>offline</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+    <section class="surface map">
+      <div class="tag">map.retina.fm · .map</div>
+      <h1>Live radar</h1>
+      <p class="lede">The dark operational picture: tracks, detections, and coverage.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-accent">Follow track</a>
+        <a class="btn btn-outline">Layers</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>UAL2456</h3><p>FL340 · 471 kt · solver + ADS-B agree.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Tracks</span><span class="v">38</span></div>
+          <div class="fact"><span class="k">Detections/s</span><span class="v">1,940</span></div>
+          <div class="fact"><span class="k">Nodes online</span><span class="v">6</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>live</span>
+          <span class="pill warn"><span class="dot"></span>selected</span>
+          <span class="pill err"><span class="dot"></span>anomaly</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>
