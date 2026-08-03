@@ -3,7 +3,10 @@
 - **Date:** 2026-07-21; revised 2026-07-23 after priorities were refined, an ADS-B
   prior-art survey (§10) and on-node measurements; corrected 2026-07-24 (blah2 IQ buffer
   duration and `saveIq` rate, with knock-on to the ring-buffer size; downlink command
-  integrity added to §6).
+  integrity added to §6); amended 2026-07-27 (config reporting moved off the Mender
+  inventory stopgap to the server control plane, §2.4; pairing split from claiming, §2.4).
+  The account and claiming model this plane carries is decided in the 2026-08-03 phase 1
+  ADR, not here.
 - **Status:** Proposed (design agreed in discussion; implementation not started)
 - **Scope:** How RETINA radar nodes communicate with the central server, phased: phase 1
   delivers live detections from up to ~50 nodes over HTTPS; the archive/bulk plane and the
@@ -23,7 +26,7 @@ recorded in §2.3.
 Priorities as of 2026-07-22:
 
 1. **Live data from node to server**: a snapshot of current detections at 1–2 Hz, plus small
-   control messages (pairing, account linking, config sync) and a low-rate command path back
+   control messages (pairing, claiming, config sync) and a low-rate command path back
    to the node.
 2. **Archive and bulk transfer later**: the hourly snapshot archive and large capture
    uploads (IQ or Doppler map, §2.3) are future work.
@@ -42,12 +45,12 @@ independent failure modes.
 |---|---|---|---|
 | **Live** | 1–2 Hz snapshots up; commands down | HTTPS POST, commands piggybacked on responses | Managed MQTT when a §2.2 tripwire fires |
 | **Bulk/archive** | Capture files; hourly archive | Future work | HTTPS presigned upload direct to Cloudflare R2 |
-| **Control/identity** | Pairing, account linking, config reporting | HTTPS (FastAPI on the droplet, via Cloudflare) | Unchanged |
+| **Control/identity** | Pairing, claiming, config reporting | HTTPS (FastAPI on the droplet, via Cloudflare) | Unchanged |
 
 ```
    node ──HTTPS POST 1–2 Hz──► droplet FastAPI (ingest)            [via Cloudflare]
         ◄── commands + config version ride each response
-   node ──HTTPS──────────────► droplet FastAPI (pairing, config)   [via Cloudflare]
+   node ──HTTPS──────────────► droplet FastAPI (pairing, claiming, config)  [via Cloudflare]
    node ──HTTPS PUT──────────► Cloudflare R2 (bulk plane, future work)
 ```
 
@@ -170,32 +173,36 @@ Two constraints recorded now so the future design starts from them:
 ### 2.4 Control/identity plane
 
 - Transactional, node-initiated operations run over HTTPS to the existing FastAPI backend,
-  fronted by Cloudflare: pairing, account linking, config reporting. Request/response by
+  fronted by Cloudflare: pairing, claiming, config reporting. Request/response by
   nature, and they must work before any other credential exists.
 - Pairing and bootstrap: the node generates (or already holds, via `retina-custody`) its
-  P-256 keypair; the user enters a claim code in the retina-gui setup wizard; the server
-  binds the node's public key to the account and provisions its API credential in
+  P-256 keypair and registers it with the server, which provisions its API credential in
   whichever form §6 item 1 settles on. This parallels the Mender auto-accept flow that
-  `node-infra` already runs; the PiAware claim UX is the usability benchmark (§10).
+  `node-infra` already runs. Pairing gives the node an identity; it does not record whose
+  node it is.
+- Accounts are authenticated by magic link, and claiming binds a paired node to an account.
+  Both are decided and specified in the phase 1 ADR (D25 and D23; the flow and its failure
+  modes in its §12), so only what this plane has to carry is stated here: an unauthenticated
+  email endpoint, a session cookie, and one node-authenticated request carrying a short code.
+  What the code proves is that the account holder can write to the node's local retina-gui,
+  which requires LAN access or physical presence, so it is a second factor against an
+  already-authenticated account rather than an identity mechanism in its own right. The
+  PiAware claim UX is the usability benchmark (§10).
 - The custody key is the root identity; transport credentials (API token now, broker
   credential later) are subordinate and replaceable through this plane. Revoking a node
   disables its credential and rejects its custody signature, with no effect on any other
   node.
-- Mender as a config stopgap: the configure add-on is disabled on the current plan, so
-  Mender cannot push config. It can track it: a custom inventory script reports the merged
-  effective config (retina-node merges default/user/forced at deployment time) as device
-  attributes, say a hash plus the load-bearing keys, and with the inventory poll interval
-  shortened from its 8 h default to a few minutes the droplet polls Mender's device API
-  for close-to-live visibility of what each node actually runs. The troubleshoot add-on
-  (enabled) additionally allows on-demand pull of the actual config file from a connected
-  device. Config push stays with deployments (A6). The inventory stopgap is interim: built
-  now, retired once the §2.1 channel carries config reports at cut-over.
-  The field list in the "Configuration Data on Server" ticket (ClickUp 86caq4a90) splits
-  along this seam: owner identity and contact are entered at pairing and land in the cloud
-  database; antenna, location and install details live in node config and suit inventory
-  reporting. Low-sensitivity owner fields (display name, system name, town) also ride
-  inventory, where troubleshooters working in the Mender UI benefit from them; contact
-  details (email, phone) stay in the cloud database only.
+- Config reporting goes to the server over this control plane, not through Mender. The
+  node reports its effective config (a hash with every telemetry message, the full merged
+  config at startup and on change, §2.1) to the FastAPI backend, which persists it to the
+  cloud database, so config lives in one place. An earlier revision routed config
+  visibility through a Mender inventory script as an interim stopgap; that is dropped in
+  favour of reporting straight to the server from the start. Config push stays out of
+  scope, with deployments (A6).
+  The field list in the "Configuration Data on Server" ticket (ClickUp 86caq4a90) lands
+  server-side: owner identity and contact come from the claiming account (the verified
+  email, plus an optional phone number on the profile); antenna, location and install
+  details ride the node's config report.
 
 ## 3. Parameters (measured or derived; restate in code as config, not magic numbers)
 
@@ -222,7 +229,7 @@ re-derive them from §2.3's constraints (RAM-hourly spool, capture size) when it
 - **D1, three separate planes.** Each plane stays simple and fails independently; modes in
   §7. The ADS-B ecosystem's split of light live feeds from raw/heavy side channels is the
   same shape (§10). Mender is in effect a pre-existing fourth plane (software and OS
-  lifecycle, plus the §2.4 inventory stopgap); it stays out of scope here (A6) but shares
+  lifecycle); it stays out of scope here (A6) but shares
   the same independent-failure property.
 - **D2, HTTPS for the live plane now; managed MQTT when a §2.2 tripwire fires.** The
   original broker choice rested on the seconds-level capture push, which left with the bulk
@@ -303,6 +310,8 @@ re-derive them from §2.3's constraints (RAM-hourly spool, capture size) when it
   carries commands. Ours carries commands and credentials from day one, and the custody
   story wants transport integrity, so everything runs over TLS.
 
+The account model this plane assumes is decided in the phase 1 ADR rather than here, as D25.
+
 ## 5. Assumptions
 
 - **A1** Nodes are Raspberry Pi 5 with the SD card as the only disk; the fleet is mixed,
@@ -324,8 +333,8 @@ re-derive them from §2.3's constraints (RAM-hourly spool, capture size) when it
 - **A5** The live pipeline never needs late data (the association-window rationale is in
   §2.1); retrospective analysis is a batch job over the future R2 archive.
 - **A6** Mender/OTA and the existing custody signing scheme continue; this design adds
-  transport and replaces neither. The only Mender-side change is the §2.4 inventory script
-  and a shorter inventory poll.
+  transport and replaces neither, and needs no Mender-side change at all now that config
+  reporting goes to the server (§2.4).
 - **A7** The ~276 B frames are representative; re-derive §3 if they change by an order of
   magnitude.
 - **A8** (applies when the archive returns) Hour keying and chain segments require correct
@@ -339,7 +348,7 @@ re-derive them from §2.3's constraints (RAM-hourly spool, capture size) when it
   buffered offset); after a reboot the server can only bracket the data between the node's
   last online contact and the upload. Battery presence is confirmable only by a power
   cycle test (a battery-backed RTC reports sane time before NTP); RTC device presence and
-  its offset are fleet-checkable via the §2.4 inventory script. RTC devices were present
+  its offset are fleet-checkable from the node's config report (§2.4). RTC devices were present
   and correctly set on all 11 nodes sampled 2026-07-23; battery presence remains
   unconfirmed.
 
@@ -418,6 +427,7 @@ When the archive returns:
 | Droplet outage | Fleet-wide: no ingest | None delivered (single point in phase 1) | Restore droplet; a broker would decouple this at scale (§2.2) |
 | Cloudflare outage | Fleet-wide | None | Vendor's SLA; accepted as rare |
 | Node key or credential compromised | Fake but authenticated data possible | Attacker can drain or suppress the node's pending commands until revocation | Reputation flags it; revoke the credential; contested archive hours (future) per D13 |
+| Magic link or claim code intercepted | Unaffected: node data is public | Unaffected: allow flags are node-local (§2.1) | Both are single-use and short-lived (§2.4); a wrongly bound node is unbound and re-claimed |
 
 Broker and R2 rows return with their planes; the original analysis (jittered reconnect
 backoff, spool-covers-outage, vendor SLA absorption) carries over unchanged.
@@ -455,6 +465,9 @@ pointing fleet ingest at it.
   and clean re-authentication.
 - **Security:** revoke a node mid-stream and verify ingest rejection; plausibility gates
   reject impossible detections (§10).
+- **Identity:** a magic link works once and not after expiry; `/claim/start` returns the
+  same response for a known and an unknown address; a claim code binds only when both the
+  session and the node's own credential are present, and lapses unused.
 
 ## 10. Prior art: ADS-B feeder networks (surveyed 2026-07-22)
 
