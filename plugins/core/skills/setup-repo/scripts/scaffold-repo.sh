@@ -50,6 +50,7 @@ case "$STACK" in
     copy "$ASSETS/stack/python/gitignore"            "$TARGET/.gitignore"
     copy "$ASSETS/stack/python/tests/.gitkeep"       "$TARGET/tests/.gitkeep"
     copy "$ASSETS/ci/ci-python.yml"                  "$TARGET/.github/workflows/ci.yml"
+    copy "$ASSETS/precommit/python.yaml"             "$TARGET/.pre-commit-config.yaml"
     ;;
   ts-frontend)
     copy "$ASSETS/stack/ts-frontend/package.json"     "$TARGET/package.json"
@@ -62,6 +63,7 @@ case "$STACK" in
     copy "$ASSETS/stack/ts-frontend/src/index.test.ts" "$TARGET/src/index.test.ts"
     copy "$ASSETS/stack/ts-frontend/src/main.tsx"      "$TARGET/src/main.tsx"
     copy "$ASSETS/ci/ci-node.yml"                     "$TARGET/.github/workflows/ci.yml"
+    copy "$ASSETS/precommit/ts.yaml"                 "$TARGET/.pre-commit-config.yaml"
     ;;
   ts-backend)
     copy "$ASSETS/stack/ts-backend/package.json"      "$TARGET/package.json"
@@ -72,6 +74,7 @@ case "$STACK" in
     copy "$ASSETS/stack/ts-backend/src/index.ts"       "$TARGET/src/index.ts"
     copy "$ASSETS/stack/ts-backend/src/index.test.ts"  "$TARGET/src/index.test.ts"
     copy "$ASSETS/ci/ci-node.yml"                     "$TARGET/.github/workflows/ci.yml"
+    copy "$ASSETS/precommit/ts.yaml"                 "$TARGET/.pre-commit-config.yaml"
     ;;
   none) ;;
 esac
