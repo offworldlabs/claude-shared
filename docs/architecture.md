@@ -36,7 +36,7 @@ flowchart TB
   end
 
   subgraph central["Central server — cloud droplet"]
-    tf["Tower-Finder = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + live-map SPA + admin dashboard"]
+    tf["retina-server = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + live-map SPA + admin dashboard"]
     tfs[tower-finder-service · site-survey utility]
   end
 
@@ -53,7 +53,7 @@ flowchart TB
 - **Edge radar node** — a Raspberry Pi 5 running `owl-os` with the `retina-node`
   Docker Compose stack. Captures IQ from an SDR (SDRplay RSPduo), computes
   delay-Doppler detections, and forwards them to the central server.
-- **Central server** — the `Tower-Finder` monorepo (the repo name is historical;
+- **Central server** — the `retina-server` monorepo (the repo name is historical;
   it is now the full RETINA server). Ingests detections from all nodes, runs
   multi-target tracking and multi-node geolocation, and serves the live maps.
 - **Web clients** — the live map (`map.retina.fm`) and admin dashboard
@@ -74,7 +74,7 @@ flowchart LR
   a2d -->|truth| api
   api -->|detections over TCP · config-gated| trk
 
-  subgraph central["inside Tower-Finder — in-process libraries"]
+  subgraph central["inside retina-server — in-process libraries"]
     trk[tracker · Kalman + GNN] --> geo[geolocator · Levenberg-Marquardt, multi-node]
     geo --> state[in-memory track state]
   end
@@ -133,7 +133,7 @@ JSONL output is the offline/batch path, not the live feed.
   `owl-os` (systemd, `:80`, `owl.local`). Management plane, not data plane.
 
 ### Central server
-- **Tower-Finder** (Python FastAPI + React/Vite SPAs) — the RETINA central server.
+- **retina-server** (Python FastAPI + React/Vite SPAs) — the RETINA central server.
   One container (nginx + uvicorn) hosting: TCP detection ingest (`:3012`), the
   multi-target **tracker** (Kalman + GNN) and node associator, the multi-node
   **geolocator** (Levenberg-Marquardt), auth/admin/analytics, the live-map SPA,
@@ -207,7 +207,7 @@ JSONL output is the offline/batch path, not the live feed.
    Switching the *data-plane* network is automated; switching the *OTA control*
    plane is intentionally manual.
 
-**Central / cloud:** the `Tower-Finder` monorepo container + `tower-finder-service`
+**Central / cloud:** the `retina-server` monorepo container + `tower-finder-service`
 run on a DigitalOcean droplet, joined by a shared `retina-edge` Docker network and
 fronted by Cloudflare; both deploy via `git reset --hard origin/main` +
 `docker compose up -d --build` from GitHub Actions on push to `main`. The public
@@ -238,7 +238,7 @@ authoritative inventory — deployment topology changes faster than this table.
 | `tar1090-node` | ADS-B decode + map + proxy | readsb, nginx, Node |
 | `retina-spectrum` | Illuminator spectrum survey | C++ |
 | `retina-gui` | Node management UI | Python/Flask |
-| `Tower-Finder` | Central RETINA server (ingest, track, geolocate, maps) | Python/FastAPI, React/Vite |
+| `retina-server` | Central RETINA server (ingest, track, geolocate, maps) | Python/FastAPI, React/Vite |
 | `tower-finder-service` | Illuminator site-survey microservice | Python/FastAPI |
 | `retina-tracker` | Multi-target tracker (Kalman/GNN) — library vendored into central server | Python |
 | `retina-geolocator` | LM delay/Doppler → position solver — library vendored into central server | Python |
@@ -271,7 +271,7 @@ flowchart LR
     spec[retina-spectrum]
     gui[retina-gui]
   end
-  subgraph central["Central server — Tower-Finder (libs in-process)"]
+  subgraph central["Central server — retina-server (libs in-process)"]
     trk[retina-tracker] --> geo[retina-geolocator] --> ana[retina-analytics]
   end
   sim[retina-simulation]
@@ -302,7 +302,7 @@ flowchart LR
   os[owl-os] -->|sysdeps + bundles| gui[retina-gui]
   os -->|SDRplay API + watchdog| blah
   blah <-->|shared SDRplay libs · RSPduo exclusive| spec
-  tf[Tower-Finder] -.->|vendors as git submodules| libs["retina-tracker / -geolocator /<br/>-analytics / -custody / -simulation"]
+  tf[retina-server] -.->|vendors as git submodules| libs["retina-tracker / -geolocator /<br/>-analytics / -custody / -simulation"]
 ```
 
 <details>
@@ -317,7 +317,7 @@ git submodule and imported in-process. **HTTP** = REST/proxy.
 | **retina-node** | compose | compose | compose | compose (excl.) | – | – | – | URL env |
 | **blah2-arm** | – | HTTP `/api/dd` | – | HW libs | Format (forward¹) | – | – | – |
 | **retina-gui** | HTTP :49152 | – | HTTP :8078 | SSE proxy :3020 | – | – | – | HTTP `/api/towers` |
-| **Tower-Finder** | bridge (radar3) | Format | – | – | lib (in-process²) | lib (in-process²) | lib | dup logic |
+| **retina-server** | bridge (radar3) | Format | – | – | lib (in-process²) | lib (in-process²) | lib | dup logic |
 | **retina-tracker** | Format (in) | Format (adsb) | – | – | – | Format (out) | – | – |
 | **retina-geolocator** | reads config.yml | – | – | – | Format (in) | – | Format (out) | – |
 | **retina-simulation** | – | – | – | – | Format→:3012 | – | – | towers API |
