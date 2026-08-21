@@ -14,8 +14,8 @@ stylesheet with the others:
 
 - **offworldlabs.com** ([`landing-page-owl`](https://github.com/offworldlabs/landing-page-owl)) — the lab
 - **retina.fm** ([`landing-page-retina`](https://github.com/offworldlabs/landing-page-retina)) — the product
-- **dash.retina.fm** (`Tower-Finder/dashboard`) — the admin console
-- **map.retina.fm** (`Tower-Finder/frontend`) — the live radar map
+- **dash.retina.fm** (`retina-server/dashboard`) — the admin console
+- **map.retina.fm** (`retina-server/frontend`) — the live radar map
 
 They read as one family, but each has its own voice. The map is the odd one out:
 it is the only dark surface, a Flightradar24-style operational console.

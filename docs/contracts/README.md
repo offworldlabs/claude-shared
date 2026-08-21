@@ -6,7 +6,7 @@ than in either repository, so neither owns it and both can diff it.
 ## `nodes_api_v1.yml`
 
 The node ↔ server wire contract, currently **1.1.1**. Three independent implementations depend on
-it: the server in `Tower-Finder`, the node client in `retina-node`, and the conformance harness.
+it: the server in `retina-server`, the node client in `retina-node`, and the conformance harness.
 
 **It is versioned, not frozen.** The changelog at the top of the file is authoritative. A change is
 a coordinated event rather than a silent edit: bump the version, record the change in the changelog,

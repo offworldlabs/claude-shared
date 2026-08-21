@@ -11,7 +11,7 @@ this with the connection matrix in [`architecture.md`](./architecture.md) §6.
   This is the highest-blast-radius contract in the system.
 
 - **Tower ranking logic:** **duplicated** in
-  `Tower-Finder/backend/.../tower_ranking.py` and
+  `retina-server/backend/.../tower_ranking.py` and
   `tower-finder-service/backend/tower_ranking.py` — edit both until deduplicated.
   **retina-spectrum** and **retina-gui** are downstream HTTP consumers of `/api/towers`.
 
@@ -30,13 +30,13 @@ this with the connection matrix in [`architecture.md`](./architecture.md) §6.
 
 - **Tracker / geolocator / analytics algorithms:** the libraries **retina-tracker** /
   **retina-geolocator** / **retina-analytics** are vendored as git submodules in
-  **Tower-Finder** and run in-process. A change means bumping the submodule in
-  Tower-Finder and redeploying the central server (not a separate tracker service).
+  **retina-server** and run in-process. A change means bumping the submodule in
+  retina-server and redeploying the central server (not a separate tracker service).
 
 - **OTA / fleet onboarding flow:** spans **owl-os** (Mender inventory scripts) →
   **node-infra** (auto-accept + deploy) → **retina-gui** (`wizard_pending` gate) →
   **retina-node** (Mender artifact). All four participate.
 
 - **The `retina-edge` Docker network / `*.retina.fm` deployment:** shared by
-  **tower-finder-service** and the Tower-Finder-hosted nginx vhost on the central
+  **tower-finder-service** and the retina-server-hosted nginx vhost on the central
   droplet. See [`architecture.md`](./architecture.md) §4 for the live-endpoint table.
