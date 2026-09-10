@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brand tokens preview — owl / retina / dash</title>
+<title>Brand tokens preview — owl / retina / dash / map / owl-os</title>
 
-<!-- Fonts the marketing surfaces use (tokens.css sets the families; it does not
+<!-- Fonts the branded surfaces use (tokens.css sets the families; it does not
      load them). The console uses the system stack, so it needs no link. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,9 +16,11 @@
 
 <style>
   /* Page chrome only. Everything below the .surface panels is driven purely by
-     token values, so the three columns differ ONLY because the surface class
+     token values, so the columns differ ONLY because the surface class
      differs. If the starter reproduces the look, the columns should feel like
-     owl / retina / dash without any per-surface CSS here. */
+     owl / retina / dash / map / owl-os without any per-surface CSS here.
+     The controls block is the one place this shows the tokens rather than the
+     live sites: owl and retina ship no form controls at all (see guide §6). */
   body {
     margin: 0;
     background: #d8d8d4;
@@ -26,11 +28,12 @@
   }
   .board {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0;
     min-height: 100vh;
   }
-  @media (max-width: 1200px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 1500px) { .board { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1000px) { .board { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 640px)  { .board { grid-template-columns: 1fr; } }
 
   /* A surface panel paints itself from its own tokens. */
@@ -107,6 +110,47 @@
   .pill.err  { background: var(--danger-wash);  color: var(--danger); }
   .pill.err  .dot { background: var(--danger); }
 
+  /* Form controls. Only dash, map and owl-os ship these; the block is rendered
+     on all five so the tokens can be compared, and the owl/retina columns label
+     it as tokens-only. Knob and active-segment fills use --canvas rather than
+     --surface so they stay legible when the surface inverts (map). */
+  .field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .85rem; }
+  .field-label { font-size: .8rem; font-weight: 500; color: var(--ink-muted); }
+  .field-help  { font-size: .75rem; color: var(--ink-subtle); }
+  .field-err   { font-size: .75rem; color: var(--danger); }
+  .input {
+    width: 100%; font-family: var(--font-body); font-size: .85rem;
+    color: var(--ink); background: var(--surface);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-sm); padding: .5rem .6rem;
+  }
+  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+  .input.invalid { border-color: var(--danger); }
+  .input:disabled { opacity: .55; cursor: not-allowed; }
+
+  .row-between { display: flex; align-items: center; justify-content: space-between;
+                 gap: 1rem; font-size: .85rem; margin-bottom: .85rem; }
+
+  /* Switch: ink when on, following owl-os, since on/off is not a brand moment. */
+  .switch { width: 36px; height: 20px; border-radius: 999px; flex: none;
+            background: var(--border-strong); position: relative; display: inline-block; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px;
+                   width: 16px; height: 16px; border-radius: 999px; background: var(--canvas); }
+  .switch.on { background: var(--ink); }
+  .switch.on::after { left: 18px; }
+
+  .seg { display: inline-flex; background: var(--canvas-sunk); padding: 2px; gap: 2px;
+         border: var(--border-width) solid var(--border); border-radius: var(--radius-sm); }
+  .seg-btn { font-family: var(--font-body); font-size: .78rem; font-weight: 500;
+             border: none; background: transparent; color: var(--ink-muted);
+             padding: .35rem .7rem; border-radius: var(--radius-sm); cursor: pointer; }
+  /* The fill alone does not carry this: --surface and --canvas-sunk are within
+     1.2:1 on every surface except owl-os, which separates them with a shadow it
+     is alone in having. A token-driven hairline keeps the pill legible without
+     shifting layout. See guide §6. */
+  .seg-btn.active { background: var(--surface); color: var(--ink);
+                    box-shadow: 0 0 0 var(--border-width) var(--border); }
+
   /* Accent + canvas swatches. */
   .swatches { display: flex; gap: .5rem; margin-top: .9rem; }
   .sw { flex: 1; height: 46px; border-radius: var(--radius-sm); border: var(--border-width) solid var(--border);
@@ -155,6 +199,26 @@
       </div>
 
       <div class="block">
+        <span class="label">Controls (tokens only)</span>
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" value="Offworld Labs" readonly>
+          <span class="field-help">owl ships no form controls.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Band</label>
+          <select class="input"><option>VHF / UHF</option></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Latitude</label>
+          <input class="input invalid" value="33.9" readonly>
+          <span class="field-err">Enter a number between -90 and 90.</span>
+        </div>
+        <div class="row-between"><span>Reduced motion</span><span class="switch on"></span></div>
+        <div class="seg"><button class="seg-btn active">Research</button><button class="seg-btn">Press</button></div>
+      </div>
+
+      <div class="block">
         <span class="label">Accent · wash · sunk</span>
         <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
       </div>
@@ -192,6 +256,26 @@
           <span class="pill warn"><span class="dot"></span>echo</span>
           <span class="pill err"><span class="dot"></span>error</span>
         </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Controls (tokens only)</span>
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" value="RETINA kit" readonly>
+          <span class="field-help">retina ships no form controls.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Band</label>
+          <select class="input"><option>FM 88–108 MHz</option></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Latitude</label>
+          <input class="input invalid" value="33.9" readonly>
+          <span class="field-err">Enter a number between -90 and 90.</span>
+        </div>
+        <div class="row-between"><span>Ships to UK</span><span class="switch on"></span></div>
+        <div class="seg"><button class="seg-btn active">Single</button><button class="seg-btn">Pair</button></div>
       </div>
 
       <div class="block">
@@ -235,6 +319,26 @@
       </div>
 
       <div class="block">
+        <span class="label">Controls</span>
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" value="node-atl-03" readonly>
+          <span class="field-help">Styled inline per page today.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Band</label>
+          <select class="input"><option>FM 88–108 MHz</option></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Latitude</label>
+          <input class="input invalid" value="33.9" readonly>
+          <span class="field-err">Enter a number between -90 and 90.</span>
+        </div>
+        <div class="row-between"><span>Email alerts</span><span class="switch on"></span></div>
+        <div class="seg"><button class="seg-btn active">Users</button><button class="seg-btn">Admins</button></div>
+      </div>
+
+      <div class="block">
         <span class="label">Accent · wash · sunk</span>
         <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
       </div>
@@ -272,6 +376,89 @@
           <span class="pill warn"><span class="dot"></span>selected</span>
           <span class="pill err"><span class="dot"></span>anomaly</span>
         </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Controls</span>
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" value="UAL2456" readonly>
+          <span class="field-help">Two search boxes, one job.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Band</label>
+          <select class="input"><option>All sources</option></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Latitude</label>
+          <input class="input invalid" value="33.9" readonly>
+          <span class="field-err">Enter a number between -90 and 90.</span>
+        </div>
+        <div class="row-between"><span>Show anomalies</span><span class="switch on"></span></div>
+        <div class="seg"><button class="seg-btn active">Live</button><button class="seg-btn">Playback</button></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+
+    <!-- owl-os is the only surface whose primary button is ink rather than
+         accent, and the only one with real elevation on its cards. -->
+    <section class="surface owl-os">
+      <div class="tag">owl.local · .owl-os</div>
+      <h1>This node</h1>
+      <p class="lede">Setup, configuration and fleet summary, served off the node itself.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-primary">Apply changes</a>
+        <a class="btn btn-outline">Run calibration</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>blah2</h3><p>Radar processing · reachable on this network.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Transmitter</span><span class="v">WABE 90.1 MHz</span></div>
+          <div class="fact"><span class="k">owl-os</span><span class="v">v1.4.2</span></div>
+          <div class="fact"><span class="k">retina-node</span><span class="v">Not installed</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>ideal</span>
+          <span class="pill warn"><span class="dot"></span>far</span>
+          <span class="pill err"><span class="dot"></span>too close</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Controls</span>
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" value="ret4c844c20" readonly>
+          <span class="field-help">Shown in the fleet bar.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Band</label>
+          <select class="input"><option>FM 88–108 MHz</option></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Latitude</label>
+          <input class="input invalid" value="33.9" readonly>
+          <span class="field-err">Enter a number between -90 and 90.</span>
+        </div>
+        <div class="row-between"><span>Cloud services</span><span class="switch on"></span></div>
+        <div class="seg"><button class="seg-btn active">Radar</button><button class="seg-btn">Spectrum</button></div>
       </div>
 
       <div class="block">
