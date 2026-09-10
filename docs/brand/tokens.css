@@ -4,20 +4,21 @@
    A snapshot of the values the existing sites use, gathered into one place so a
    new page can start from them instead of re-deriving colours and fonts by eye.
 
-   This describes what the four surfaces do TODAY, not a target design. Where
+   This describes what the five surfaces do TODAY, not a target design. Where
    the sites disagree (see docs/brand/brand-guide.md §"Improvements, gaps &
    discrepancies") this file keeps the disagreement visible rather than papering
    over it: the shared spine lives in :root, and each surface's own values live
    in a class you add to <body>.
 
    Usage:
-     <body class="retina"> … </body>          // pick owl | retina | dash | map
+     <body class="retina"> … </body>          // owl | retina | dash | map | owl-os
      colour: var(--ink);
      background: var(--canvas);
 
    The token NAMES here are unified (the live sites each use their own naming —
    --ink/--paper on owl, --text/--bg on retina, --bg-primary/--text-primary on
-   dash). A page built from this file gets one vocabulary across all three.
+   dash, --ink/--bg/--line on owl-os). A page built from this file gets one
+   vocabulary across all of them.
 ============================================================================ */
 
 :root {
@@ -212,6 +213,74 @@
      radar detections run a Doppler gradient rather than a single colour. */
   --data-truth:  #2dd4bf;   /* solver + ADS-B agreement (teal) */
   --data-adsb:   #22d3ee;   /* ground-truth dot (cyan) */
+}
+
+/* ============================================================================
+   owl-os — owl.local / ret<node_id>.retnode.com  (the node's own web UI)
+   The surface baked into the owl-os image and served off the node itself: a
+   setup wizard, a config page, and a fleet summary. One app on one port under
+   every name the node has, on the LAN and over the tunnel alike, so retnode.com
+   needs no separate block here.
+   Nearest to dash in job but not in look: near-white warm paper, Inter plus
+   JetBrains Mono, generous radii, ink-filled primary buttons with the blue
+   kept for accents and focus rings.
+
+   Alone among the surfaces it authors its colours in OKLCH. The hex values in
+   the comments are the sRGB equivalents, given for reference only: keep the
+   OKLCH, since the live stylesheet is what this snapshot describes.
+============================================================================ */
+.owl-os {
+  --font-display: 'Inter', system-ui, sans-serif;   /* no serif, no separate display face */
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --canvas:       oklch(0.995 0.003 75);   /* #fffdfb, warmer and lighter than owl's paper */
+  --canvas-sunk:  oklch(0.985 0.003 75);   /* #fbfaf8 */
+  --surface:      #ffffff;
+
+  --ink:          oklch(0.20 0.012 260);   /* #13161c, a cool near-black */
+  --ink-muted:    oklch(0.42 0.012 260);   /* #494d54 */
+  --ink-subtle:   oklch(0.62 0.010 260);   /* #83868c */
+
+  --accent:        oklch(0.62 0.15 250);   /* #2f8adc */
+  --accent-strong: oklch(0.57 0.15 250);   /* #1a7acb, hover */
+  --accent-wash:   oklch(0.96 0.03 250);   /* #e3f4ff, an opaque tint, not an alpha wash */
+  --accent-border: oklch(0.88 0.04 250);   /* #c4daf2, the wash's own edge */
+
+  /* Semantics sit between the marketing and console sets, and each carries a
+     matching opaque -wash and, for success, an edge. */
+  --success:      oklch(0.65 0.14 155);    /* #33a868 */
+  --success-wash: oklch(0.985 0.012 155);  /* #f4fdf7 */
+  --warning:      oklch(0.75 0.14 75);     /* #e1a035 */
+  --warning-wash: oklch(0.97 0.04 75);     /* #fff2d8 */
+  --danger:       oklch(0.62 0.20 25);     /* #e64343 */
+  --danger-wash:  oklch(0.96 0.04 25);     /* #ffe8e4 */
+
+  --border:        oklch(0.93 0.005 75);   /* #eae7e4, the hairline around anything */
+  --border-strong: oklch(0.93 0.005 75);   /* no darker rule exists on this surface */
+  --border-light:  oklch(0.96 0.004 75);   /* #f3f1ef, dividers INSIDE a card */
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+
+  --heading-weight: 600;
+
+  /* Elevation is real here, unlike the other four: cards rest on a hairline
+     shadow and lift on hover. */
+  --shadow-sm:  0 1px 0 oklch(0.20 0.012 260 / 0.04), 0 1px 2px oklch(0.20 0.012 260 / 0.04);
+  --shadow-md:  0 1px 0 oklch(0.20 0.012 260 / 0.04), 0 6px 24px oklch(0.20 0.012 260 / 0.06);
+  --shadow-pop: 0 4px 16px oklch(0.20 0.012 260 / 0.10);
+
+  /* Domain colours the node UI owns and no other surface has: the broadcast
+     band a transmitter sits in, and how usable it is as an illuminator. */
+  --band-fm:      #3b82f6;
+  --band-vhf:     #8b5cf6;
+  --band-uhf:     #ec4899;
+  --suit-ideal:   oklch(0.65 0.14 155);
+  --suit-good:    oklch(0.75 0.13 75);
+  --suit-far:     oklch(0.70 0.01 260);
+  --suit-close:   oklch(0.62 0.20 25);
 }
 
 /* ============================================================================

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brand tokens preview — owl / retina / dash</title>
+<title>Brand tokens preview — owl / retina / dash / map / owl-os</title>
 
-<!-- Fonts the marketing surfaces use (tokens.css sets the families; it does not
+<!-- Fonts the branded surfaces use (tokens.css sets the families; it does not
      load them). The console uses the system stack, so it needs no link. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,9 +16,9 @@
 
 <style>
   /* Page chrome only. Everything below the .surface panels is driven purely by
-     token values, so the three columns differ ONLY because the surface class
+     token values, so the columns differ ONLY because the surface class
      differs. If the starter reproduces the look, the columns should feel like
-     owl / retina / dash without any per-surface CSS here. */
+     owl / retina / dash / map / owl-os without any per-surface CSS here. */
   body {
     margin: 0;
     background: #d8d8d4;
@@ -26,11 +26,12 @@
   }
   .board {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0;
     min-height: 100vh;
   }
-  @media (max-width: 1200px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 1500px) { .board { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1000px) { .board { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 640px)  { .board { grid-template-columns: 1fr; } }
 
   /* A surface panel paints itself from its own tokens. */
@@ -271,6 +272,49 @@
           <span class="pill ok"><span class="dot"></span>live</span>
           <span class="pill warn"><span class="dot"></span>selected</span>
           <span class="pill err"><span class="dot"></span>anomaly</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Accent · wash · sunk</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+      </div>
+    </section>
+
+
+    <!-- owl-os is the only surface whose primary button is ink rather than
+         accent, and the only one with real elevation on its cards. -->
+    <section class="surface owl-os">
+      <div class="tag">owl.local · .owl-os</div>
+      <h1>This node</h1>
+      <p class="lede">Setup, configuration and fleet summary, served off the node itself.</p>
+
+      <div class="block">
+        <span class="label">Buttons</span>
+        <a class="btn btn-primary">Apply changes</a>
+        <a class="btn btn-outline">Run calibration</a>
+      </div>
+
+      <div class="block">
+        <span class="label">Card</span>
+        <div class="card"><h3>blah2</h3><p>Radar processing · reachable on this network.</p></div>
+      </div>
+
+      <div class="block">
+        <span class="label">Facts</span>
+        <div class="facts">
+          <div class="fact"><span class="k">Transmitter</span><span class="v">WABE 90.1 MHz</span></div>
+          <div class="fact"><span class="k">owl-os</span><span class="v">v1.4.2</span></div>
+          <div class="fact"><span class="k">retina-node</span><span class="v">Not installed</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <span class="label">Status</span>
+        <div class="pills">
+          <span class="pill ok"><span class="dot"></span>ideal</span>
+          <span class="pill warn"><span class="dot"></span>far</span>
+          <span class="pill err"><span class="dot"></span>too close</span>
         </div>
       </div>
 
