@@ -321,16 +321,17 @@ settings, large enough not to read as a table.
 
 | | owl | retina | dash | map | owl-os |
 |---|---|---|---|---|---|
-| Radius (default) | 4px | 12px | 8px | 6px | 10px |
-| Radius (small) | 3px | 8px | 4px | 3px | 6px |
-| Radius (large) | 6px | 20px | 12px | 10px | 14px |
+| Radius (default) | 4px | 12px | 8px | 8px | 10px |
+| Radius (small) | 3px | 8px | 4px | 4px | 6px |
+| Radius (large) | 6px | 20px | 12px | 12px | 14px |
 
-Crisp on owl, soft on retina, moderate on dash, tight on the map, second-softest
-on owl-os. Borders are always 1px hairlines; nothing uses a heavy stroke. The
-map's panels float over a moving basemap rather than sitting on a page, so it is
-the one surface where a card carries a shadow as standard (`--panel-shadow`),
-heavier on dark than on light because a soft shadow does almost nothing there
-and the elevation has to come from the panel being lighter than the canvas.
+Crisp on owl, soft on retina, moderate on dash and on the map, which take the
+same scale, second-softest on owl-os. Borders are always 1px hairlines; nothing
+uses a heavy stroke. The map's panels float over a moving basemap rather than
+sitting on a page, so it is the one surface where a card carries a shadow as
+standard (`--panel-shadow`), heavier on dark than on light because a soft shadow
+does almost nothing there and the elevation has to come from the panel being
+lighter than the canvas.
 
 The three-step scale is a fair summary for four of the surfaces and a
 simplification for one. The map is now the closest to keeping to it: most of its
