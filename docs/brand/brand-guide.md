@@ -432,6 +432,12 @@ Around it:
 - The switch is 36×20px with a 16px knob and fills with **ink** when on, not
   accent, since on/off is not a brand moment. The segmented control is inset on
   `--surface-2` with the active segment as a raised white pill.
+- That pill does not port. Building it in `preview.html` against each surface's
+  tokens showed why: it reads from the step between `--surface` and
+  `--canvas-sunk`, and those two sit within 1.2:1 on owl, retina, dash and map.
+  owl-os gets away with it by pairing the fill with `shadow-md`, which is the one
+  surface with a shadow scale to spend. Anywhere else the active segment needs a
+  hairline or a text-colour shift to be visible at all.
 - Checkboxes are native at `accent-color: var(--ink)`, wrapped in a row with a
   12.5px help line beneath. **Radios are native and entirely unstyled**: no class
   exists for them, they are positioned with an inline `margin-top`, and only one
@@ -758,6 +764,13 @@ filed as work; a snapshot of loose ends rather than a plan.
   placeholder, and owl-os's `.ds-textarea` / `.ds-steps` / `.ds-step` are all
   fully styled with no markup using them. Harmless, but each one reads as an
   available component to the next person building a page.
+- **Only one surface can express elevation.** owl-os is alone in having a shadow
+  scale; the other four have at most a single hardcoded shadow (retina's button
+  lift, dash's dropdown, map's overlay cards). Any component that separates two
+  layers by raising one, the segmented control being the clearest case, works on
+  owl-os and flattens everywhere else, because `--surface` and `--canvas-sunk`
+  are within 1.2:1 on all four. A shared shadow token would unblock a class of
+  component the other surfaces currently cannot build.
 
 **Accessibility**
 
