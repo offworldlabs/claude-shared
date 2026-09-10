@@ -286,8 +286,14 @@ settings, large enough not to read as a table.
 
 Crisp on owl, soft on retina, moderate on dash, tight on the map, second-softest
 on owl-os. Borders are always 1px hairlines; nothing uses a heavy stroke. The map
-builds elevation from backdrop-blur (14–20px) and subtle shadow rather than
-cards, since its panels float over the map.
+builds elevation from backdrop-blur (20px on the detail panel, 14px on the
+playback bar) and subtle shadow rather than cards, since its panels float over
+the map.
+
+The three-step scale is a fair summary for four of the surfaces and a
+simplification for two. The map actually spends 2, 3, 4, 5, 6 and 10px in its
+stylesheet plus 8 and 12px inline, and retina spends 5, 6, 8, 10, 12 and 20px,
+with neither of its two button radii matching the 12px recorded as its default.
 
 owl-os is the only surface with a real elevation scale: a hairline `shadow-sm` at
 rest, a 24px-blur `shadow-md` on hover and for the sticky save bar, and a
@@ -336,33 +342,201 @@ keep it.
 
 ## 6. Components
 
-- **Nav.** Fixed top bar, `backdrop-filter: blur(...)` over a translucent
-  canvas, a hairline bottom border. Logo left (mono wordmark, or logo + mono
-  text on owl), links centre/left, a primary CTA right. Collapses to a hamburger
-  under ~860–960px.
-- **Buttons.** Primary = solid ink (marketing) or solid accent (console),
-  inverse text, small radius. owl and dash keep them flat; retina lifts them
-  (`translateY(-1px)` + soft shadow) on hover. Secondary = text link with a
-  hairline underline (owl), or an outline button (retina/dash).
-- **Section eyebrow.** A `.label` micro-label above each H2 naming the section
-  ("About", "Flagship project", "Capabilities"). The consistent opener for a
-  marketing section.
-- **Fact rows / metrics.** Label-value pairs on hairline-divided rows (owl's
-  RETINA facts), or a bordered 4-up metrics bar (retina). Values in the display
-  face, labels muted. A tidy way to present specs.
-- **Cards.** White, 1px border, surface radius, no shadow. Grids of cards use a
-  1px gap over a border-coloured background so the dividers read as shared lines
-  (retina's steps/features, dash's panels).
-- **Badges / pills.** Rounded (12px), tinted `-wash` background with matching
-  text colour, often a leading status dot. Success/warning/error on the console;
-  "live" on the marketing sites.
-- **Footer.** Hairline top border, mono wordmark left, muted links, a `© 2026`
-  line. Understated. owl-os fills its footer with versions instead (node ID,
-  owl-os version, retina-node version, each value in mono), so the first thing
-  anyone is asked for in a support conversation is already on screen.
+The five surfaces do not have the same component set, and the differences are
+larger than the colour and type differences in §3 and §4. Before reaching for a
+pattern, check it exists on the surface you are building for.
 
-The node UI adds several components the other surfaces have no use for. They are
-worth knowing about before building anything else that runs on a node.
+| | owl | retina | dash | map | owl-os |
+|---|---|---|---|---|---|
+| Form controls | **none** | **none** | inline, ad hoc | a few, ad hoc | a real set |
+| Tables | none | none | yes | none | one |
+| Modal / dialog | none | none | **native `confirm()`** | one | three |
+| Toasts | none | none | none | yes | none |
+| Tabs | none | none | one page | app shell only | yes |
+| Icons | 36px, part-filled | Unicode glyphs | 24px, stroke 2 | inline SVG | 24px, stroke 1.6 |
+| Framework | none | none | none | none | Bootstrap 5.3 |
+| Custom properties | yes | yes | yes | **none** | yes |
+| `:focus` styling | none | none | **none** | one rule | inputs only |
+
+The two marketing sites have no `<form>`, `<input>`, `<select>`, `<textarea>` or
+`<table>` between them, and no `:focus` or `:active` rule in either file. Their
+only stateful control is the mobile nav toggle, and retina's one transaction
+leaves for Stripe. So everything below about controls concerns dash, map and
+owl-os alone.
+
+### Chrome: nav and footer
+
+- **Marketing nav.** Fixed top bar, `backdrop-filter: blur(16–20px)` over a
+  translucent canvas, a hairline bottom border. Logo left (mono wordmark, or logo
+  plus mono text on owl), links centre, a primary CTA right. 56px on owl, 64px on
+  retina. Under 860px (owl) or 960px (retina) it collapses to a hamburger that is
+  a literal `☰` text character, not an icon, opening an absolutely positioned
+  blurred panel. Neither sets `aria-expanded`, traps focus, or changes the glyph
+  when open.
+- **dash is not a top bar.** It runs a 250px left sidebar plus a 56px header. The
+  sidebar carries a brand block (32px accent square, 15px name, an 11px muted
+  sub-label naming the console), then sections titled in the micro-label, then
+  `.nav-item` rows at 8px 12px with 18px icons: hover tints the row, active takes
+  `--accent-light` with `--accent` text. Two navigation trees exist, chosen by
+  whether the viewer is an admin. Under 768px the sidebar is `display: none` with
+  nothing in its place, so navigation is simply unreachable on a phone.
+- **map** has an app-shell header (gradient `#0d1b2a → #132240 → #0f2035`, 18px
+  32px, a ⌁ glyph as the mark) plus its own full-width toolbar strip below, which
+  is in normal flow rather than floating over the map.
+- **owl-os** stacks a fleet bar over page tabs; see the node section below.
+- **Footer.** Hairline top border, mono wordmark left, muted links, a `© 2026`
+  line. Understated. dash and map have none. owl-os fills its footer with
+  versions instead (node ID, owl-os version, retina-node version, each value in
+  mono), so the first thing anyone is asked for in a support conversation is
+  already on screen.
+
+### Buttons
+
+Primary is solid ink on the marketing sites and owl-os, solid accent on dash and
+map. owl, dash and owl-os keep buttons flat; retina lifts them
+(`translateY(-1px)` plus a soft shadow) on hover. Secondary is a text link with a
+hairline underline (owl), or an outline button (retina, dash, owl-os).
+
+| | owl | retina | dash | map (`.toggle-btn`) | owl-os |
+|---|---|---|---|---|---|
+| Padding | 0.7rem 1.4rem | 0.55rem 1.25rem | 8px 16px | 3px 8px | 8px 14px |
+| Radius | 4px | 8px (10px large) | 4px | 5px | 8px |
+| Size / weight | 0.875rem 500 | 0.875rem 500 | 13px 500 | 0.7rem | 13.5px 500 |
+| Disabled | n/a | n/a | secondary only | one `<option>` | 0.55 opacity |
+| Busy | n/a | n/a | label text only | n/a | spinner in label |
+
+Three things worth knowing. On the marketing sites every button is an `<a>`, so
+no disabled, active or busy state is expressible at all. On dash the disabled
+rule is attached only to `.btn-secondary`, so a disabled primary or outline
+button looks enabled. And the map's column above describes `.toggle-btn`, a small
+bordered chip used about twenty times in the toolbar and the console's dominant
+control. Its `.active` state (a `rgba(56,189,248,0.18)` fill with a
+`rgba(56,189,248,0.5)` border and `#7dd3fc` text) carries almost all of the
+surface's on/off state, standing in for the switches it does not have.
+
+### Form controls
+
+**owl-os is the only surface with a designed set.** One rule serves text inputs,
+selects and textareas: full width, `--surface` ground, 1px `--line`, radius 8px,
+padding 8px 10px, 13.5px. Focus clears the outline and takes an `--accent` border
+plus a 3px accent ring at 12% alpha; `.is-invalid` swaps both for `--danger`.
+Around it:
+
+- Number fields carry `.ds-input mono`, so digits are JetBrains Mono with tabular
+  figures, and the unit sits beside the field rather than inside it (mono 12.5px
+  `--ink-3`).
+- A select is styled as an input and gets no custom chevron, so the dropdown
+  arrow is the browser's. Readonly selects are `disabled` rather than restyled.
+- Read-only values use `.cfg-readonly`: mono on `--surface-2` behind a padlock,
+  with a hidden input carrying the real value so the form still posts it.
+- The switch is 36×20px with a 16px knob and fills with **ink** when on, not
+  accent, since on/off is not a brand moment. The segmented control is inset on
+  `--surface-2` with the active segment as a raised white pill.
+- Checkboxes are native at `accent-color: var(--ink)`, wrapped in a row with a
+  12.5px help line beneath. **Radios are native and entirely unstyled**: no class
+  exists for them, they are positioned with an inline `margin-top`, and only one
+  of them sets `accent-color`, so the rest render in the browser's blue.
+- Field furniture is a label at 13px/500 with the explanation directly under it at
+  12px `--ink-3`, in a two-column row that puts the control on the right.
+- `.ds-textarea` is defined and never used; there is no textarea on the surface.
+
+**dash has no shared control styling at all.** Its stylesheet contains no
+`input`, `select` or `textarea` selector, so every control is styled inline at
+the call site and they have diverged into three incompatible text-input variants
+(260px at 13px with no background, 180px at 12px on `--bg-input`, and one wholly
+unstyled), three select variants, and one textarea (the JSON config editor, 400px
+tall in monospace). There is no focus, hover, disabled or error treatment on any
+of them, no help text, and no inline validation message. The only labelled form
+on the surface is the invite form, whose label is a 12px muted block.
+
+**map has a handful, also inline.** Two different search boxes for the same job
+(the sidebar's is borderless and transparent with a placeholder at `#1e293b`,
+close to invisible; the toolbar's is a bordered pill), a native sort `<select>`
+carrying the surface's only `:focus` rule, three unstyled number inputs in the
+filter popover, one native checkbox in the owner popover, and the playback
+scrubber, which is a native `input[type=range]` tinted with
+`accent-color: #38bdf8` and otherwise left as the browser drew it.
+
+Neither dash nor map has a toggle switch, a radio, a date picker or a file input
+anywhere.
+
+### Feedback: loading, empty, validation, errors
+
+- **Loading.** owl-os shows Bootstrap's spinner, always shrunk by the same
+  copy-pasted inline style rather than a class, and swaps a button's label for
+  spinner plus text while it works. dash has no spinner and no skeleton at all:
+  every page returns the text "Loading…" in its empty-state box, and in-table
+  loading is an ad hoc centred cell. map has one Suspense fallback reading
+  "Loading map…". Nothing anywhere uses a skeleton.
+- **Empty states.** dash centres muted text at 48px 20px, with an icon slot that
+  is defined and never used, and copy that drifts from neutral ("No invites yet.")
+  to exclamatory. map's is "No aircraft" in `#1e293b` on `#0f2035`, which is very
+  nearly invisible. owl-os's is a help line that names the next action ("No cached
+  tower search results yet. Run the Location step..."), which is the one worth
+  copying.
+- **Validation.** Only owl-os has any. A form-level banner above the form carries
+  the specific refusal, falling back to "Please fix the highlighted fields below",
+  and each offending field takes `.is-invalid`.
+- **Error banners.** owl-os uses a danger-tinted banner at the top of the form and
+  an info-tinted one in the same shape for neutral notices. dash has a warning
+  banner on one page and a card-shaped error banner on two others. map has an
+  emergency-squawk alert inside the detail panel.
+- **Error boundaries.** Both dash and map fall back to an unstyled `<h2>`, a
+  sentence and a default browser button. On the dark map that is black-on-white
+  in the middle of the console.
+
+### Overlays: modals, popovers, toasts
+
+- **owl-os** has three Bootstrap modals doing three different jobs, and the split
+  is worth copying: a form modal, a destructive confirmation that lists the
+  consequences in prose, and a blocking progress modal set
+  `data-bs-backdrop="static" data-bs-keyboard="false"` so it cannot be dismissed
+  while the run holds the SDR. It also puts a fixed scrim over the whole wizard
+  when the session expires, rather than leaving live-looking controls behind.
+- **dash has no modal component.** Confirmations are native `window.confirm()`
+  and save errors are native `alert()`. Its only popover is the user dropdown in
+  the header, which is also the only shadow on the surface.
+- **map** has one modal, the keyboard-shortcut help, plus three inline popovers
+  (filters, stats, node owner) that share a top-right stack so they cannot
+  overlap. It is the only surface with **toasts**: a bottom-right stack of chips
+  with four tones, a 2.5s life, no dismiss control and no animation.
+- **Tooltips.** No surface has a styled tooltip component. dash and map both rely
+  on the native `title` attribute, used around twenty times on map alone. The one
+  exception is map's `.radar3-error-label`, a Leaflet tooltip restyled in place.
+
+### Data display
+
+- **Section eyebrow.** A micro-label above each H2 naming the section. The
+  consistent opener for a marketing section, and the strongest shared idiom.
+- **Fact rows and metrics.** Label-value pairs on hairline-divided rows (owl's
+  RETINA facts), a bordered 4-up metrics bar (retina), stat cards with a 28px/700
+  value and four tint modifiers (dash), or label-value rows on hairlines with
+  tabular-numeric values (map's detail panel, owl-os's node cards).
+- **Cards.** White, 1px border, surface radius. Flat on the marketing sites and
+  dash; owl-os gives them a resting hairline shadow and lifts them on hover.
+  retina's grids use a 1px gap over a border-coloured ground so dividers read as
+  shared lines; **dash's do not**, using a real 16px gap with per-card borders.
+- **Tables.** Only dash and owl-os have one. dash's is 11px uppercase muted
+  headers over 13px rows with a hairline under each and a 2% row hover, wrapped
+  in a horizontal scroller: no sticky header, no zebra, no sortable headers, no
+  row selection. Sorting, where it exists, is a `<select>` or a row of buttons.
+  owl-os's tower table adds what dash lacks: a selected row marked by a wash plus
+  a 3px inset rail.
+- **Badges are not one component.** §3's status colours are consistent; the
+  shapes they are poured into are not. Across the five surfaces there are at
+  least seven: a 12px tinted-wash pill with a leading dot (dash, three variants
+  only, so an unmatched state renders as an undecorated pill with a bare black
+  dot); an outline pill with a dot (owl-os `.ds-pill`); a tinted 999px chip
+  (owl-os `.node-chip`); a 6px tinted rectangle (owl-os `.tower-badge`); a 6px
+  solid-ink corner badge (retina's kit); a 5px green wash (retina's savings tag);
+  an 8px outline chip (retina's OSS row); a 3px translucent source badge and a
+  4px gradient connection badge (map); and owl's live label, which is white on a
+  black scrim over the iframe. Pick the surface's own shape rather than assuming
+  the pill.
+
+### Per-surface components worth knowing
+
+**owl-os (the node UI).**
 
 - **Fleet bar over page tabs.** Two stacked rows reading as one banner: the
   parent row is every node on the network (each an absolute link to its own
@@ -373,30 +547,58 @@ worth knowing about before building anything else that runs on a node.
 - **Wizard shell.** A fixed head / scrolling body / fixed foot at `100dvh`, body
   capped at 560px. Progress is a row of 24×4px bars, not numbered circles: ink
   for done, accent for the current step, hairline for what is ahead.
-- **Switches and segmented controls.** A 36×20px track that fills with **ink**
-  when on, not accent, since on/off is not a brand moment; plus an inset
-  segmented control whose active segment is a raised white pill.
 - **Sticky save bar.** Pinned to the bottom of the config page with a shadow and
   a live count of what has changed, so a long form never hides the fact that it
   has unsaved edits.
-- **Rail-marked selection.** The selected row of a table, the active side-nav
-  link and the matching manage-list item all take a 2–3px `inset` box-shadow
-  rail plus a wash, rather than a border change. Selection reads without shifting
-  layout by a pixel.
+- **Rail-marked selection.** The selected table row, the active side-nav link and
+  the matching manage-list item all take a 2–3px `inset` box-shadow rail plus a
+  wash, rather than a border change. Selection reads without shifting layout by a
+  pixel.
 - **Peak meter.** A segmented dBFS ladder per tuner, styled as rack gear, with
   the reading in tabular mono to its right and an alarm state in `--danger`.
-- **Line-art icons.** 24×24 stroke SVGs inlined in the markup at `stroke-width:
-  1.6`, round caps and joins, `currentColor`. No icon font, no sprite sheet. The
-  antenna mark (a dot under two arcs, on a mast) is the node glyph, and it means
-  the same thing everywhere it appears: a nav tab, a node card, a "listening on"
-  row.
-- **Bootstrap underneath.** owl-os is the only surface built on a CSS framework
-  (Bootstrap 5.3 from a CDN), with a block of overrides mapping Bootstrap's
-  components onto the tokens. Two consequences worth carrying: Bootstrap also
-  defines `.nav`, so the banner needs `flex-wrap: nowrap` set back explicitly,
-  and Bootstrap's `.is-invalid` styling is scoped to its own `.form-control`
-  classes, so a custom input needs its own invalid rules or a validation message
-  points at nothing.
+- **Bootstrap underneath.** owl-os is the only surface on a CSS framework
+  (Bootstrap 5.3 from a CDN), with a block of overrides mapping its components
+  onto the tokens. Two consequences worth carrying: Bootstrap also defines `.nav`,
+  so the banner needs `flex-wrap: nowrap` set back explicitly, and Bootstrap
+  scopes `.is-invalid` to its own `.form-control` classes, so a custom input needs
+  its own invalid rules or a validation message points at nothing.
+
+**map (the live console).**
+
+- **Virtualised aircraft list.** Fixed 40px rows with five rows of overscan inside
+  a spacer sized to the full count. The row height is a constant shared between
+  the TSX and the CSS, so changing one alone breaks the scroll maths. Rows carry a
+  colour indicator, a rotating aircraft glyph, callsign, and right-aligned
+  altitude and speed in tabular numerals; selection is an amber left rail over a
+  wash, and truth-only rows drop to 0.65 opacity.
+- **Two panel treatments, not one.** The detail and playback panels use
+  backdrop-blur (20px and 14px); the four inline overlay cards use no blur at all,
+  only an opaque near-black fill and a soft shadow.
+- **Blur as meaning.** A blurred edge means measured but approximate (node
+  uncertainty discs at 5px, fuzzy coverage at 3.5px); a sharp dashed edge means a
+  declared model, which is why the theoretical Yagi cone stays crisp. Worth
+  preserving as a rule rather than a style.
+- **Leaflet supplies the rest.** Zoom control, attribution and popups are
+  inherited unstyled, so the popups are Leaflet's default white bubbles sitting on
+  a dark console. Tiles are filtered to `opacity 0.82` with
+  `saturate(0.85) brightness(0.78)` to sit under the overlay.
+
+**dash (the console).** Pagination is the one component repeated verbatim across
+six pages: a centred Prev / Next pair with "Page N of M" between them, at a page
+size of 25. Tabs exist in the stylesheet (a 2px accent underline on the active
+tab) but are used on exactly one page. Charts are Recharts with their chrome set
+inline and identically on seven pages, in hard-coded hex rather than the tokens.
+
+**owl and retina (the marketing sites).** Both are built from hairline-divided
+row lists rather than cards: owl has three separate ones (use cases, team,
+funders) that share the idiom but no class and each redeclare their own borders.
+owl's other notable component is the live-radar iframe, a 4:3 near-black box with
+an overlaid mono "live" label and a pulsing green dot, and no loading or error
+state. retina's are the autoplaying muted video with its legend row, the pricing
+block with its savings tag and tick checklist, and a fully inverted dark features
+section, the only dark region on a light surface. Both carry dead CSS for
+components that no longer exist in the markup: owl's three-up pillars, retina's
+kit placeholder.
 
 ---
 
@@ -545,6 +747,17 @@ filed as work; a snapshot of loose ends rather than a plan.
   homepage to the map meets two different colour languages for the same idea.
 - **No shared stylesheet.** Every value is inlined per surface, so drift is the
   default. `tokens.css` is the first step toward a single source.
+- **Three of the five have no shared control styling.** owl-os is the only
+  surface where a text input, a select and a switch are defined once and reused.
+  dash's stylesheet contains no `input`, `select` or `textarea` selector at all,
+  so its controls are styled inline per call site and have already split into
+  three incompatible text-input variants and three select variants; map is the
+  same story at smaller scale, with two different search boxes for one job. This
+  is the largest single gap between the surfaces, and the cheapest to close.
+- **Dead CSS on three surfaces.** owl's three-up pillars block, retina's kit
+  placeholder, and owl-os's `.ds-textarea` / `.ds-steps` / `.ds-step` are all
+  fully styled with no markup using them. Harmless, but each one reads as an
+  available component to the next person building a page.
 
 **Accessibility**
 
@@ -568,7 +781,10 @@ filed as work; a snapshot of loose ends rather than a plan.
   treatment; keyboard focus rides on the browser default. owl-os is halfway
   there: its inputs take an accent border plus a 3px accent ring on `:focus`, but
   as `:focus` rather than `:focus-visible`, so the ring also fires on mouse
-  click, and its buttons and links get nothing at all.
+  click, and its buttons and links get nothing at all. The rest is worse than
+  "undefined": owl, retina and dash contain no `:focus` rule whatsoever, map has
+  exactly one (its sort select), and both map text inputs set `outline: none`,
+  which removes the browser default without replacing it.
 
 **Polish**
 
@@ -599,5 +815,21 @@ filed as work; a snapshot of loose ends rather than a plan.
   looks reasonable but has not been contrast-tested, and it inherits the same
   no-`prefers-reduced-motion`, no-`:focus-visible` gaps.
 - **Inconsistent animation approach.** retina's hero uses inline SVG SMIL
-  (`<animate>`) while owl and dash use CSS keyframes. Standardising on CSS would
+  (`<animate>`) while owl uses CSS keyframes. dash has no `@keyframes` at all, so
+  none of §5's three motion patterns appear on it. Standardising on CSS would
   make the shared radar motif portable.
+- **Three colour references that resolve to nothing.** dash's error banners are
+  coloured `var(--accent-warning, #c0392b)`, and `--accent-warning` is not
+  defined anywhere, so both banners always render the fallback, a red that
+  appears nowhere else in the palette. owl-os's calibration spinner carries
+  Bootstrap's `.text-primary`, which its override block does not redefine, so
+  that one spinner is Bootstrap blue `#0d6efd` rather than the surface accent.
+  dash's `.badge` has three variants, so a state with no matching modifier
+  renders as an undecorated pill with a bare black dot.
+- **dash is unreachable on a phone.** Its 250px sidebar is `display: none` under
+  768px with no hamburger and no replacement, so there is no way to navigate
+  between pages at that width. Worth confirming against real usage before
+  treating it as intentional.
+- **Native dialogs on a designed surface.** dash confirms destructive actions with
+  `window.confirm()` and reports save errors with `alert()`. Both are unstyled OS
+  chrome in the middle of a console that otherwise controls every pixel.
