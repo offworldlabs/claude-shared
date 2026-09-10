@@ -17,8 +17,8 @@
 
    The token NAMES here are unified (the live sites each use their own naming —
    --ink/--paper on owl, --text/--bg on retina, --bg-primary/--text-primary on
-   dash, --ink/--bg/--line on owl-os). A page built from this file gets one
-   vocabulary across all of them.
+   dash and the map, --ink/--bg/--line on owl-os). A page built from this file
+   gets one vocabulary across all of them.
 ============================================================================ */
 
 :root {
@@ -165,13 +165,19 @@
 
 /* ============================================================================
    map — map.retina.fm  (the live radar console)
-   The only DARK surface. A Flightradar24-style operational map: deep navy
-   chrome, a single Inter UI font (no serif, no branded mono), a brighter
-   sky-blue accent plus an amber selection highlight, tight small radii,
-   blue-tinted translucent hairlines, backdrop-blur panels over the map.
+   The only DARK surface, and the only THEMED one. A Flightradar24-style
+   operational map: deep navy chrome, a single Inter UI font (no serif, no
+   branded mono), a brighter sky-blue accent plus an amber selection highlight,
+   tight small radii, blue-tinted translucent hairlines, opaque panels carrying
+   a shadow over the moving basemap.
 
    Because the canvas is dark and the ink is light, --btn-primary (ink on
    canvas) reads as a light button on dark — the inverse of the other three.
+
+   The light theme follows in its own block. Dark is on the class and light on
+   the attribute, matching the live surface: the attribute is stamped from
+   JavaScript, so whichever theme depends on it is the one that can flash the
+   other before first paint, and that must not be the default.
 ============================================================================ */
 .map {
   --font-display: 'Inter', system-ui, sans-serif;   /* no serif here */
@@ -188,7 +194,10 @@
 
   --accent:        #38bdf8;  /* brighter sky-blue than the other surfaces */
   --accent-strong: #7dd3fc;  /* light-sky, for badges/hovers */
-  --accent-wash:   rgba(56, 189, 248, 0.15);
+  --accent-wash:   rgba(56, 189, 248, 0.16);
+  /* The wash at hover strength, below --accent-wash so a hovered row and a
+     selected one stay apart. The map is the only surface with two. */
+  --accent-tint:   rgba(56, 189, 248, 0.07);
   --accent-select: #fbbf24;  /* amber — selected aircraft / focus glow */
 
   /* Dark-surface semantics (brighter so they carry on navy) */
@@ -199,8 +208,8 @@
   --danger:       #f43f5e;
   --danger-wash:  rgba(244, 63, 94, 0.15);
 
-  --border:        rgba(100, 180, 255, 0.12);  /* blue-tinted hairline */
-  --border-strong: rgba(100, 180, 255, 0.22);
+  --border:        rgba(100, 180, 255, 0.14);  /* blue-tinted hairline */
+  --border-strong: rgba(100, 180, 255, 0.28);
 
   --radius:    6px;
   --radius-sm: 3px;
@@ -208,11 +217,46 @@
 
   --heading-weight: 700;
 
-  /* Data-viz colours are NOT UI chrome and live in the map code, but the two
-     that a legend or overlay might reuse: "truth" is teal/cyan, not green, and
-     radar detections run a Doppler gradient rather than a single colour. */
-  --data-truth:  #2dd4bf;   /* solver + ADS-B agreement (teal) */
-  --data-adsb:   #22d3ee;   /* ground-truth dot (cyan) */
+  /* Data-viz colours are NOT UI chrome and live in the map code, but the two a
+     legend or overlay might reuse. Truth is the ADS-B fix the solves are
+     measured against rather than one more track, so it wears no hue: it sits at
+     the neutral extreme, furthest along the ink ramp from the canvas. A
+     simulated target flying without a transponder is grey beside it. Radar
+     detections run a Doppler gradient rather than a single colour. */
+  --data-truth:      #f8fafc;   /* ADS-B ground truth */
+  --data-truth-dark: #94a3b8;   /* target flying without a transponder */
+}
+
+/* The map's light theme. dash's chrome values throughout, over Carto Positron
+   tiles instead of Voyager; only the values change, since everything on the
+   surface is written against these names. */
+.map[data-theme="light"] {
+  --canvas:       #f1f5f9;
+  --canvas-sunk:  #f8fafc;
+  --surface:      #ffffff;
+
+  --ink:          #0f172a;
+  --ink-muted:    #475569;
+  --ink-subtle:   #94a3b8;
+
+  --accent:        #3b82f6;
+  --accent-strong: #2563eb;
+  --accent-wash:   rgba(59, 130, 246, 0.10);
+  --accent-tint:   rgba(59, 130, 246, 0.05);
+  --accent-select: #d97706;  /* amber-600, to carry on a near-white basemap */
+
+  --success:      #10b981;
+  --success-wash: rgba(16, 185, 129, 0.10);
+  --warning:      #f59e0b;
+  --warning-wash: rgba(245, 158, 11, 0.10);
+  --danger:       #ef4444;
+  --danger-wash:  rgba(239, 68, 68, 0.10);
+
+  --border:        #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --data-truth:      #1e293b;
+  --data-truth-dark: #64748b;
 }
 
 /* ============================================================================

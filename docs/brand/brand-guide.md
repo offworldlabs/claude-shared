@@ -19,8 +19,9 @@ stylesheet with the others:
 - **owl.local** ([`retina-gui`](https://github.com/offworldlabs/retina-gui)) — the node's own UI
 
 They read as one family, but each has its own voice. Two sit apart: the map is
-the only dark surface, a Flightradar24-style operational console, and owl-os is
-the only one that runs on hardware in someone's house rather than on a server.
+the only dark surface, a Flightradar24-style operational console, and the only
+one that themes, offering light alongside its default dark (§3); owl-os is the
+only one that runs on hardware in someone's house rather than on a server.
 
 owl-os is the odd repository as well as the odd surface. The UI is authored in
 [`retina-gui`](https://github.com/offworldlabs/retina-gui) but shipped by
@@ -53,7 +54,8 @@ blah2 rather than to any surface described here.
 
 The surfaces share a spine (a blue accent, green/amber status colours, a small
 uppercase micro-label, hairline rules) and then diverge in personality. The split
-maps onto audience. Four are light; the map is dark.
+maps onto audience. Four are light; the map is dark by default and can be
+switched to light.
 
 | | **owl** — offworldlabs.com | **retina** — retina.fm | **dash** — dash.retina.fm | **map** — map.retina.fm | **owl-os** — owl.local |
 |---|---|---|---|---|---|
@@ -63,11 +65,11 @@ maps onto audience. Four are light; the map is dark.
 | **Serif** | Source Serif 4, wt 400 | Fraunces, wt 600 | none | none | none |
 | **Sans** | Inter | DM Sans | system stack | Inter (only font) | Inter |
 | **Mono** | IBM Plex Mono | JetBrains Mono | SF Mono | none (generic) | JetBrains Mono |
-| **Canvas** | warm paper `#f7f6f2` | warm paper `#fafaf9` | cool slate `#f1f5f9` | **navy `#0d1b2a`** | near-white warm `#fffdfb` |
-| **Blue** | muted `#5b8dd9` | punchy `#2563eb` | `#3b82f6` → `#2563eb` | sky `#38bdf8` | `#2f8adc`, accents only |
+| **Canvas** | warm paper `#f7f6f2` | warm paper `#fafaf9` | cool slate `#f1f5f9` | **navy `#0d1b2a`**, light `#f1f5f9` | near-white warm `#fffdfb` |
+| **Blue** | muted `#5b8dd9` | punchy `#2563eb` | `#3b82f6` → `#2563eb` | sky `#38bdf8`, light `#3b82f6` | `#2f8adc`, accents only |
 | **Radius** | 4–6px | 8–20px | 4–8px | 3–10px | 6–14px |
 | **Buttons** | flat | lift + shadow | flat | flat | flat, primary is ink |
-| **Dark UI** | none | one dark section | none | **fully dark** | none |
+| **Dark UI** | none | one dark section | none | **dark by default**, light opt-in | none |
 
 A rough rule of thumb for a new page: **who is it for?** Reaching outward to the
 scientific or funding world reads as owl. Selling or explaining the kit reads as
@@ -91,14 +93,16 @@ to carry into new work.
 - **A paper-like canvas.** Four of the five use a near-white background (warm on
   the marketing sites and owl-os, cool slate on the console) with near-black
   text; owl-os pushes furthest toward white at `#fffdfb`. The **map is the
-  exception**: it is fully dark navy with light slate text. So "light paper" is
-  the norm for anything that explains, sells or configures, and dark is reserved
-  for the live operational view.
+  exception**: dark navy with light slate text, and the only surface that
+  themes, since it carries the console's light palette as an option too (§3). So
+  "light paper" is the norm for anything that explains, sells or configures, and
+  dark is the default for the live operational view.
 - **A blue accent.** owl sits soft and desaturated, retina and dash land on the
   brighter `#2563eb`/`#3b82f6`, owl-os lands between them at `#2f8adc`, and the
-  map goes brighter still (sky `#38bdf8`) to carry on dark. Blue is the only
-  chromatic accent in the UI chrome; everything else is ink on canvas. (The map
-  adds an amber `#fbbf24` as a selection/focus highlight.) owl-os spends its blue
+  map goes brighter still (sky `#38bdf8`) to carry on dark, dropping back to
+  dash's `#3b82f6` when it is themed light. Blue is the only chromatic accent in
+  the UI chrome; everything else is ink on canvas. (The map adds an amber
+  `#fbbf24` as a selection/focus highlight.) owl-os spends its blue
   the most sparingly: the primary button is ink, and the accent is kept for focus
   rings, hover borders, selection washes and the one card that is _this_ node.
 - **Green and amber as status colours.** Green marks "live" / validated / ADS-B
@@ -140,16 +144,31 @@ roles (semantics) are shared unless a surface overrides them.
 | Canvas | `#f7f6f2` | `#fafaf9` | `#f1f5f9` | `#0d1b2a` | `#fffdfb` |
 | Sunk surface | `#edecea` | `#f5f4f0` | `#f8fafc` | `#0f2035` | `#fbfaf8` |
 | Card / panel | `#ffffff` | `#ffffff` | `#ffffff` | `#132240` | `#ffffff` |
-| Dark section | — | `#090904` / `#242422` | — | (all dark) | — |
+| Dark section | — | `#090904` / `#242422` | — | (the dark theme) | — |
 | Ink (primary) | `#0e0e0c` | `#1a1a18` | `#0f172a` | `#e2e8f0` | `#13161c` |
 | Ink (muted) | `#444440` | `#6b6b63` | `#475569` | `#94a3b8` | `#494d54` |
 | Ink (subtle) | `#888882` | `#9c9c93` | `#94a3b8` | `#64748b` | `#83868c` |
-| Border | `rgba(14,14,12,.1)` | `#e8e8e3` | `#e2e8f0` | `rgba(100,180,255,.12)` | `#eae7e4` |
+| Border | `rgba(14,14,12,.1)` | `#e8e8e3` | `#e2e8f0` | `rgba(100,180,255,.14)` | `#eae7e4` |
 
 The marketing canvases are warm (a hint of yellow); the console is cool slate;
 the map inverts to dark navy. The map's ink ramp is the dark mirror of the
 console's slate ramp (`#94a3b8` / `#64748b` recur), and its hairlines are a
 blue-tinted translucent white rather than a solid grey.
+
+**The map's column above is its dark theme, which is the default.** Its light
+theme takes dash's values wholesale: canvas `#f1f5f9`, sunk `#f8fafc`, card
+`#ffffff`, the slate ink ramp, border `#e2e8f0`. The switch is a `data-theme`
+attribute on the surface root, and the base selector carries dark while the
+attribute carries light, so the default cannot flash the other theme before the
+attribute is stamped. Everything on the surface is written against the custom
+properties, so the whole chrome inverts from that one block.
+
+The sunk tier is the one place the two are not mirror images, and the reason the
+map needs a token the light surfaces can do without. On a light surface a
+recessed region is made by letting the canvas show through, the canvas already
+being darker than a card; the map's ramp inverts, so a recessed pane needs a
+colour of its own. It pays for the left aircraft list and, on the Physics tab,
+the scene, ground-truth and solver sections.
 
 owl-os crosses the two: a warm canvas like the marketing sites, over a **cool**
 ink ramp like the console. It is also the only surface authored in **OKLCH**
@@ -168,14 +187,21 @@ thirty stacked rows from reading as a grid.
 |---|---|---|---|---|---|
 | Accent | `#5b8dd9` | `#2563eb` | `#3b82f6` | `#38bdf8` | `#2f8adc` |
 | Hover / strong | `#4a7cc8` | `#3b82f6` | `#2563eb` | `#7dd3fc` | `#1a7acb` |
-| Wash | `rgba(91,141,217,.15)` | `rgba(37,99,235,.06)` | `rgba(59,130,246,.10)` | `rgba(56,189,248,.15)` | `#e3f4ff` (opaque) |
+| Wash | `rgba(91,141,217,.15)` | `rgba(37,99,235,.06)` | `rgba(59,130,246,.10)` | `rgba(56,189,248,.16)` | `#e3f4ff` (opaque) |
 | Wash edge | — | `rgba(37,99,235,.15)` | — | — | `#c4daf2` |
+| Tint (hover) | — | — | — | `rgba(56,189,248,.07)` | — |
 
 owl's blue is deliberately soft and low-contrast (an editorial choice, though it
 costs link legibility, see §10). retina and dash share the saturated blue, with
 dash resting one step lighter and hovering to retina's resting value. The map
-pushes to a brighter sky-blue so the accent reads on navy. owl-os sits between
-dash and the map, a shade cyan-ward of both. Five distinct blues in all.
+pushes to a brighter sky-blue so the accent reads on navy, and takes dash's
+value when themed light rather than adding a sixth. owl-os sits between dash and
+the map, a shade cyan-ward of both. Five distinct blues in all.
+
+The map is the only surface with **two** accent washes. The tint is the wash at
+hover strength and sits deliberately below the wash proper, so a hovered row and
+a selected one stay apart instead of collapsing into the same fill (light:
+`rgba(59,130,246,.05)` under `rgba(59,130,246,.10)`).
 
 Two things owl-os does differently with it. Its washes are **opaque tints**, not
 alpha overlays, so a wash keeps its colour over any ground it lands on rather
@@ -194,19 +220,34 @@ region is bounded rather than bleeding into the page. The map adds an amber
 | Error | (unused) | `#ef4444` (red-500) | `#f43f5e` | `#e64343` |
 
 Same three roles, brightened a step on the dark map so they carry on navy, and
-landing between the marketing and console sets on owl-os. Each pairs with a wash
-(~10% on light, ~15% on dark; opaque on owl-os) for tinted pill backgrounds. The
-console's charts extend the accent into a categorical palette (`#3b82f6,
+landing between the marketing and console sets on owl-os. The map's light theme
+takes the console's set unchanged. Each pairs with a wash (~10% on light, ~15%
+on dark; opaque on owl-os) for tinted pill backgrounds. The console's charts
+extend the accent into a categorical palette (`#3b82f6,
 #10b981, #f59e0b, #ef4444, #8b5cf6, #ec4899, #06b6d4, #84cc16, #f97316,
 #14b8a6`, with `#94a3b8` for an "others" slice); reuse that ordering for any new
 dashboard chart.
 
 The map's live data colours are a separate, radar-specific scheme, not these
-status roles: "truth" (solver agreeing with ADS-B) is **teal `#2dd4bf`**, the
-ground-truth dot is **cyan `#22d3ee`**, and radar detections run a **Doppler
-gradient** from dark-blue approaching (`#1e3a8a`) through cyan at zero (`#22d3ee`)
-to dark-red receding (`#991b1b`). Green there means coverage polygons, not truth.
-See §8.
+status roles, and the one part of the estate chosen by measurement rather than by
+eye: each value is held to a contrast floor against its own basemap, and each
+pair of marks to a CIEDE2000 distance from the others. The second is the
+constraint that gets forgotten, and the one that binds here, because the four
+track lanes all draw the same aircraft glyph and colour is the only thing telling
+them apart. **Truth** (the ADS-B fix the solves are measured against) wears no
+hue at all: it sits at the far end of the neutral ramp from the canvas, near-white
+`#f8fafc` on dark and slate `#1e293b` on light, since it is the reference rather
+than a fifth lane. A simulated target flying without a transponder is grey beside
+it. Radar detections run a **Doppler gradient** from dark-blue approaching
+(`#1e3a8a`) through a neutral slate at zero to dark-red receding (`#991b1b`), so
+no radial motion reads as the absence of a direction rather than as a third
+colour. Green there means coverage polygons, never truth. See §8.
+
+Both palettes carry the same keys, so a component asks for a role and gets the
+value for whichever theme is drawn. The light theme is the tighter of the two:
+a near-white ground leaves every category competing for the dark end of its hue,
+where a dark ground admits the whole light end, so it is light that constrains
+any new category.
 
 owl-os carries a domain palette of its own that no other surface has, because no
 other surface asks a person to pick a transmitter. **Broadcast band** is a
@@ -285,15 +326,18 @@ settings, large enough not to read as a table.
 | Radius (large) | 6px | 20px | 12px | 10px | 14px |
 
 Crisp on owl, soft on retina, moderate on dash, tight on the map, second-softest
-on owl-os. Borders are always 1px hairlines; nothing uses a heavy stroke. The map
-builds elevation from backdrop-blur (20px on the detail panel, 14px on the
-playback bar) and subtle shadow rather than cards, since its panels float over
-the map.
+on owl-os. Borders are always 1px hairlines; nothing uses a heavy stroke. The
+map's panels float over a moving basemap rather than sitting on a page, so it is
+the one surface where a card carries a shadow as standard (`--panel-shadow`),
+heavier on dark than on light because a soft shadow does almost nothing there
+and the elevation has to come from the panel being lighter than the canvas.
 
 The three-step scale is a fair summary for four of the surfaces and a
-simplification for two. The map actually spends 2, 3, 4, 5, 6 and 10px in its
-stylesheet plus 8 and 12px inline, and retina spends 5, 6, 8, 10, 12 and 20px,
-with neither of its two button radii matching the 12px recorded as its default.
+simplification for one. The map is now the closest to keeping to it: most of its
+radius rules read `--radius` or `--radius-sm`, with 12px reserved for pills and a
+scatter of 2–6px literals left over. retina is the outlier, spending 5, 6, 8, 10,
+12 and 20px, with neither of its two button radii matching the 12px recorded as
+its default.
 
 owl-os is the only surface with a real elevation scale: a hairline `shadow-sm` at
 rest, a 24px-blur `shadow-md` on hover and for the sticky save bar, and a
@@ -333,10 +377,10 @@ limited to 120ms colour, border and shadow transitions on hover, a 150ms switch
 throw, and a 2px nudge on a card's arrow. Nothing on the page moves unless it was
 touched, which is reasonable for a settings surface someone reaches when
 something needs fixing, and the reason its one animated component, the simulator,
-is also the only place on any surface that checks `prefers-reduced-motion` before
-starting. Everything else across all five surfaces still runs its loops
-unguarded; the `tokens.css` `.reveal` helper adds the guard, and new work should
-keep it.
+checks `prefers-reduced-motion` before starting. The map guards its whole
+surface with a single reduced-motion block, and owl's `/learn` page carries its
+own; the two marketing home pages still run their loops unguarded. The
+`tokens.css` `.reveal` helper adds the guard, and new work should keep it.
 
 ---
 
@@ -348,15 +392,15 @@ pattern, check it exists on the surface you are building for.
 
 | | owl | retina | dash | map | owl-os |
 |---|---|---|---|---|---|
-| Form controls | **none** | **none** | inline, ad hoc | a few, ad hoc | a real set |
+| Form controls | **none** | **none** | inline, ad hoc | one shared rule | a real set |
 | Tables | none | none | yes | none | one |
 | Modal / dialog | none | none | **native `confirm()`** | one | three |
 | Toasts | none | none | none | yes | none |
 | Tabs | none | none | one page | app shell only | yes |
 | Icons | 36px, part-filled | Unicode glyphs | 24px, stroke 2 | inline SVG | 24px, stroke 1.6 |
 | Framework | none | none | none | none | Bootstrap 5.3 |
-| Custom properties | yes | yes | yes | **none** | yes |
-| `:focus` styling | none | none | **none** | one rule | inputs only |
+| Custom properties | yes | yes | yes | yes, themed | yes |
+| `:focus` styling | none | none | **none** | whole surface | inputs only |
 
 The two marketing sites have no `<form>`, `<input>`, `<select>`, `<textarea>` or
 `<table>` between them, and no `:focus` or `:active` rule in either file. Their
@@ -380,9 +424,11 @@ owl-os alone.
   `--accent-light` with `--accent` text. Two navigation trees exist, chosen by
   whether the viewer is an admin. Under 768px the sidebar is `display: none` with
   nothing in its place, so navigation is simply unreachable on a phone.
-- **map** has an app-shell header (gradient `#0d1b2a → #132240 → #0f2035`, 18px
-  32px, a ⌁ glyph as the mark) plus its own full-width toolbar strip below, which
-  is in normal flow rather than floating over the map.
+- **map** has an app-shell header: one slim identity bar on the panel colour,
+  carrying a 24px rounded accent square with a ⌁ glyph as the mark, and dash's
+  underline tabs sat on the bar's own bottom rule. Its full-width toolbar strip
+  sits directly below, in normal flow rather than floating over the map, and the
+  two read as a single header block.
 - **owl-os** stacks a fleet bar over page tabs; see the node section below.
 - **Footer.** Hairline top border, mono wordmark left, muted links, a `© 2026`
   line. Understated. dash and map have none. owl-os fills its footer with
@@ -399,9 +445,9 @@ hairline underline (owl), or an outline button (retina, dash, owl-os).
 
 | | owl | retina | dash | map (`.toggle-btn`) | owl-os |
 |---|---|---|---|---|---|
-| Padding | 0.7rem 1.4rem | 0.55rem 1.25rem | 8px 16px | 3px 8px | 8px 14px |
-| Radius | 4px | 8px (10px large) | 4px | 5px | 8px |
-| Size / weight | 0.875rem 500 | 0.875rem 500 | 13px 500 | 0.7rem | 13.5px 500 |
+| Padding | 0.7rem 1.4rem | 0.55rem 1.25rem | 8px 16px | 3px 9px | 8px 14px |
+| Radius | 4px | 8px (10px large) | 4px | `--radius-sm` | 8px |
+| Size / weight | 0.875rem 500 | 0.875rem 500 | 13px 500 | 12px 500 | 13.5px 500 |
 | Disabled | n/a | n/a | secondary only | one `<option>` | 0.55 opacity |
 | Busy | n/a | n/a | label text only | n/a | spinner in label |
 
@@ -410,9 +456,11 @@ no disabled, active or busy state is expressible at all. On dash the disabled
 rule is attached only to `.btn-secondary`, so a disabled primary or outline
 button looks enabled. And the map's column above describes `.toggle-btn`, a small
 bordered chip used about twenty times in the toolbar and the console's dominant
-control. Its `.active` state (a `rgba(56,189,248,0.18)` fill with a
-`rgba(56,189,248,0.5)` border and `#7dd3fc` text) carries almost all of the
-surface's on/off state, standing in for the switches it does not have.
+control. Its `.active` state (the accent wash, an accent border and
+accent-strong text) carries almost all of the surface's on/off state, standing in
+for the switches it does not have. The one exception is the anomalies toggle,
+which reports a condition as well as a state and so takes the error colour while
+it is filtering.
 
 ### Form controls
 
@@ -455,13 +503,14 @@ tall in monospace). There is no focus, hover, disabled or error treatment on any
 of them, no help text, and no inline validation message. The only labelled form
 on the surface is the invite form, whose label is a 12px muted block.
 
-**map has a handful, also inline.** Two different search boxes for the same job
-(the sidebar's is borderless and transparent with a placeholder at `#1e293b`,
-close to invisible; the toolbar's is a bordered pill), a native sort `<select>`
-carrying the surface's only `:focus` rule, three unstyled number inputs in the
-filter popover, one native checkbox in the owner popover, and the playback
-scrubber, which is a native `input[type=range]` tinted with
-`accent-color: #38bdf8` and otherwise left as the browser drew it.
+**map has one shared rule, borrowed from dash.** Text, number and search inputs
+and selects are styled together on the surface: the `--bg-input` ground, a
+hairline border, `--radius-sm`, and an accent border on focus. The aircraft list
+overrides the ground to the card colour, because `--bg-input` and `--bg-sunk`
+are the same value on light and a field on that pane would otherwise be left
+with only its border. What is still ad hoc is the playback scrubber, a native
+`input[type=range]` tinted with `accent-color` and otherwise left as the browser
+drew it, and one native checkbox in the owner popover.
 
 Neither dash nor map has a toggle switch, a radio, a date picker or a file input
 anywhere.
@@ -476,8 +525,8 @@ anywhere.
   "Loading map…". Nothing anywhere uses a skeleton.
 - **Empty states.** dash centres muted text at 48px 20px, with an icon slot that
   is defined and never used, and copy that drifts from neutral ("No invites yet.")
-  to exclamatory. map's is "No aircraft" in `#1e293b` on `#0f2035`, which is very
-  nearly invisible. owl-os's is a help line that names the next action ("No cached
+  to exclamatory. map's "No aircraft" is the same shape at the same size, in the
+  muted ink. owl-os's is a help line that names the next action ("No cached
   tower search results yet. Run the Location step..."), which is the one worth
   copying.
 - **Validation.** Only owl-os has any. A form-level banner above the form carries
@@ -532,13 +581,13 @@ anywhere.
   shapes they are poured into are not. Across the five surfaces there are at
   least seven: a 12px tinted-wash pill with a leading dot (dash, three variants
   only, so an unmatched state renders as an undecorated pill with a bare black
-  dot); an outline pill with a dot (owl-os `.ds-pill`); a tinted 999px chip
+  dot, and now the map, which took the same shape for its source and connection
+  badges); an outline pill with a dot (owl-os `.ds-pill`); a tinted 999px chip
   (owl-os `.node-chip`); a 6px tinted rectangle (owl-os `.tower-badge`); a 6px
   solid-ink corner badge (retina's kit); a 5px green wash (retina's savings tag);
-  an 8px outline chip (retina's OSS row); a 3px translucent source badge and a
-  4px gradient connection badge (map); and owl's live label, which is white on a
-  black scrim over the iframe. Pick the surface's own shape rather than assuming
-  the pill.
+  an 8px outline chip (retina's OSS row); and owl's live label, which is white on
+  a black scrim over the iframe. Pick the surface's own shape rather than
+  assuming the pill.
 
 ### Per-surface components worth knowing
 
@@ -575,19 +624,26 @@ anywhere.
   a spacer sized to the full count. The row height is a constant shared between
   the TSX and the CSS, so changing one alone breaks the scroll maths. Rows carry a
   colour indicator, a rotating aircraft glyph, callsign, and right-aligned
-  altitude and speed in tabular numerals; selection is an amber left rail over a
-  wash, and truth-only rows drop to 0.65 opacity.
-- **Two panel treatments, not one.** The detail and playback panels use
-  backdrop-blur (20px and 14px); the four inline overlay cards use no blur at all,
-  only an opaque near-black fill and a soft shadow.
+  altitude and speed in tabular numerals; selection is an accent left rail over
+  the wash, matching dash's active nav row, and truth-only rows drop to 0.7
+  opacity. Note that the list and the map mark selection in different languages
+  on purpose: the list is chrome and takes the accent, the map is data and keeps
+  amber for the selected track.
+- **One panel treatment.** The detail panel, the playback bar and the inline
+  overlay cards are all the same object: an opaque `--bg-card` fill, a hairline,
+  and `--panel-shadow`. No panel blurs what is behind it, so a card over the map
+  and a card over the sidebar read alike.
 - **Blur as meaning.** A blurred edge means measured but approximate (node
   uncertainty discs at 5px, fuzzy coverage at 3.5px); a sharp dashed edge means a
   declared model, which is why the theoretical Yagi cone stays crisp. Worth
   preserving as a rule rather than a style.
-- **Leaflet supplies the rest.** Zoom control, attribution and popups are
-  inherited unstyled, so the popups are Leaflet's default white bubbles sitting on
-  a dark console. Tiles are filtered to `opacity 0.82` with
-  `saturate(0.85) brightness(0.78)` to sit under the overlay.
+- **Leaflet, mostly brought onto the surface.** The zoom control and the
+  attribution take the surface's hairline, radius and panel shadow; popups are
+  still Leaflet's own white bubbles, which read as foreign on the dark theme. How
+  far the basemap is pushed back is a token, `--tile-filter`, because each theme
+  has a basemap its colours were measured against: dark tints Voyager down to
+  `saturate(0.85) brightness(0.78) opacity(0.82)`, light swaps in Positron and
+  barely touches it (`saturate(0.9)`).
 
 **dash (the console).** Pagination is the one component repeated verbatim across
 six pages: a centred Prev / Next pair with "Page N of M" between them, at a page
@@ -651,11 +707,11 @@ dashed accent stroke.
 
 **One caveat worth knowing:** this simplified green/amber scheme is a marketing
 device and does _not_ match how the live map (map.retina.fm) actually colours
-radar data. On the real map, "truth" is teal/cyan, radar detections run a
-blue↔red Doppler gradient, and green is used for coverage polygons (see §3). So
-a diagram and the live map deliberately tell the same story two different ways:
-keep the green/amber convention for explanatory illustrations, and the
-Doppler/teal scheme for anything showing genuine detections.
+radar data. On the real map, truth is a neutral rather than any hue, radar
+detections run a blue↔red Doppler gradient, and green is used for coverage
+polygons (see §3). So a diagram and the live map deliberately tell the same story
+two different ways: keep the green/amber convention for explanatory
+illustrations, and the measured scheme for anything showing genuine detections.
 
 ### The node's working relative: the flight-path simulator
 
@@ -691,8 +747,10 @@ their own naming), so a page gets one vocabulary.
 Add exactly one surface class (`owl`, `retina`, `dash`, `map` or `owl-os`) to
 `<body>`; it sets that surface's fonts, canvas, ink, accent, and radii. The `map`
 class is dark, so `var(--ink)` is light and `var(--canvas)` is navy: components
-written against the tokens invert automatically. The shared `:root` layer
-provides the semantic colours, base rhythm, and the `.label` / `.reveal` helpers.
+written against the tokens invert automatically. Adding `data-theme="light"`
+beside it swaps in the map's light theme, mirroring how the live surface is
+switched. The shared `:root` layer provides the semantic colours, base rhythm,
+and the `.label` / `.reveal` helpers.
 
 Two things to know about `.owl-os` specifically. Its colours stay in OKLCH, since
 that is what the live stylesheet holds; `var()` does not care, but a value copied
@@ -729,13 +787,15 @@ filed as work; a snapshot of loose ends rather than a plan.
   shared signal, settling whether it is a mono idiom or just an
   uppercase-and-tracked one would be worth more than it costs.
 - **Token naming drift.** owl uses `--ink` / `--paper`, retina uses `--text` /
-  `--bg`, dash uses `--bg-primary` / `--text-primary`, owl-os uses `--ink` /
-  `--bg` / `--line`, and the map has no custom properties at all (hardcoded hex
-  throughout). Nothing is portable between them. `tokens.css` proposes one
-  naming; adopting it in the live sites would remove the drift. owl-os is the
-  closest to a system already, with a deliberate three-step ink ramp, a
-  colour/wash/edge triple per semantic role, and its own Bootstrap compatibility
-  aliases mapping the old names onto the new ones.
+  `--bg`, dash and the map use `--bg-primary` / `--text-primary`, and owl-os uses
+  `--ink` / `--bg` / `--line`. Nothing is portable between them. `tokens.css`
+  proposes one naming; adopting it in the live sites would remove the drift. The
+  map is the one place two surfaces already agree, having taken dash's names
+  along with its values, though the two are duplicated rather than shared because
+  the apps build separately. owl-os is the closest to a system already, with a
+  deliberate three-step ink ramp, a colour/wash/edge triple per semantic role,
+  and its own Bootstrap compatibility aliases mapping the old names onto the new
+  ones.
 - **Semantic colours drift by a shade.** Green is `#16a34a` (marketing),
   `#10b981` (console), `#4ade80` (map), `#33a868` (owl-os); amber and red shift
   similarly. Close enough to look like one intent, far enough to not match.
@@ -748,18 +808,18 @@ filed as work; a snapshot of loose ends rather than a plan.
   component copied between surfaces changes behaviour silently. Only owl-os gives
   its washes a matching edge colour, which is the part most worth spreading.
 - **The "truth" colour story is inconsistent.** The marketing diagrams say green
-  = ADS-B truth; the live map says teal/cyan = truth and reserves green for
+  = ADS-B truth; the live map gives truth no hue at all and reserves green for
   coverage. Defensible (illustration vs data viz), but a viewer moving from the
   homepage to the map meets two different colour languages for the same idea.
 - **No shared stylesheet.** Every value is inlined per surface, so drift is the
   default. `tokens.css` is the first step toward a single source.
-- **Three of the five have no shared control styling.** owl-os is the only
-  surface where a text input, a select and a switch are defined once and reused.
-  dash's stylesheet contains no `input`, `select` or `textarea` selector at all,
-  so its controls are styled inline per call site and have already split into
-  three incompatible text-input variants and three select variants; map is the
-  same story at smaller scale, with two different search boxes for one job. This
-  is the largest single gap between the surfaces, and the cheapest to close.
+- **dash has no shared control styling.** Its stylesheet contains no `input`,
+  `select` or `textarea` selector at all, so its controls are styled inline per
+  call site and have already split into three incompatible text-input variants
+  and three select variants, with no focus, hover, disabled or error treatment on
+  any of them. It is the more striking gap for being the surface the map has
+  since borrowed its whole vocabulary from: the same names now carry a shared
+  control rule on the map and nothing on dash.
 - **Dead CSS on three surfaces.** owl's three-up pillars block, retina's kit
   placeholder, and owl-os's `.ds-textarea` / `.ds-steps` / `.ds-step` are all
   fully styled with no markup using them. Harmless, but each one reads as an
@@ -784,20 +844,20 @@ filed as work; a snapshot of loose ends rather than a plan.
   the explanation of what the setting does and is set smaller than the label it
   explains. Both are one OKLCH lightness step from passing: dropping either to
   `oklch(0.56 …)` clears 4.5:1 without touching its hue or chroma.
-- **No `prefers-reduced-motion`, with one exception.** The four animated surfaces
-  run infinite animations (pulses, dashed signal flow, ring expansions, the map's
-  pulsing "LIVE" badge) with no reduced-motion guard. The `tokens.css` `.reveal`
-  helper adds one; the SVG loops need the same treatment. owl-os's flight-path
-  simulator is the only thing in the estate that already checks, and it shows the
-  pattern is cheap.
-- **Focus styles.** None of the surfaces define a visible `:focus-visible`
-  treatment; keyboard focus rides on the browser default. owl-os is halfway
-  there: its inputs take an accent border plus a 3px accent ring on `:focus`, but
-  as `:focus` rather than `:focus-visible`, so the ring also fires on mouse
-  click, and its buttons and links get nothing at all. The rest is worse than
-  "undefined": owl, retina and dash contain no `:focus` rule whatsoever, map has
-  exactly one (its sort select), and both map text inputs set `outline: none`,
-  which removes the browser default without replacing it.
+- **`prefers-reduced-motion` is honoured in places, not as a rule.** owl's and
+  retina's home pages run infinite animations (pulses, dashed signal flow, ring
+  expansions) with no guard, and their SVG loops need one as much as their CSS
+  does. The map guards its whole surface with a single block, owl-os's
+  flight-path simulator checks before it starts, and owl's `/learn` page carries
+  its own; between them they show the pattern is cheap. The `tokens.css`
+  `.reveal` helper adds the guard for new work.
+- **Focus styles.** Only the map defines a visible `:focus-visible` treatment,
+  an accent outline over the whole surface; everywhere else keyboard focus rides
+  on the browser default. owl-os is halfway there: its inputs take an accent
+  border plus a 3px accent ring on `:focus`, but as `:focus` rather than
+  `:focus-visible`, so the ring also fires on mouse click, and its buttons and
+  links get nothing at all. owl, retina and dash contain no `:focus` rule
+  whatsoever. The map's one-line rule is the model to copy.
 
 **Polish**
 
@@ -806,11 +866,11 @@ filed as work; a snapshot of loose ends rather than a plan.
   help. owl-os is the one case where this genuinely does not matter: it is served
   off a box on a home network and cannot be linked to from anywhere.
 - **The operational surfaces carry little brand.** dash dropped the type system
-  for system fonts and cool slate; the map runs Inter-only on dark navy with a
-  brighter blue. Both are defensible for tools, but between them they share
-  almost nothing visible with the marketing brand beyond a blue accent and the
-  uppercase micro-label. Standardising the micro-label and reusing one blue would
-  connect all five without slowing the tools down. owl-os is the counter-example
+  for system fonts and cool slate; the map runs Inter-only and now takes dash's
+  vocabulary as well, so the two consoles agree with each other and with almost
+  nothing on the marketing sites beyond a blue accent and the uppercase
+  micro-label. Standardising the micro-label and reusing one blue would connect
+  all five without slowing the tools down. owl-os is the counter-example
   worth pointing at: it is just as much a tool and still carries the warm canvas,
   a branded mono, and the hairline-and-micro-label idiom intact.
 - **owl-os is the only surface on a CSS framework.** Bootstrap 5.3 arrives from a
@@ -823,10 +883,11 @@ filed as work; a snapshot of loose ends rather than a plan.
   `plugins/playbooks/os_setup/versions.yml`), so the style captured here, read
   from retina-gui `main`, runs ahead of the fleet until the next image. Check
   the pin before assuming a node has a component this guide describes.
-- **The dark map is unaudited for contrast here.** The accessibility notes above
-  were checked against the light surfaces; the map's light-slate-on-navy ramp
-  looks reasonable but has not been contrast-tested, and it inherits the same
-  no-`prefers-reduced-motion`, no-`:focus-visible` gaps.
+- **The map is the only surface measured rather than eyeballed.** Its data
+  palette is held to a contrast floor against its own basemap and a CIEDE2000
+  distance between marks, in both themes (§3). Its chrome ramp is not covered by
+  that, and neither is any other surface: the accessibility notes above were
+  checked against the light surfaces by inspection.
 - **Inconsistent animation approach.** retina's hero uses inline SVG SMIL
   (`<animate>`) while owl uses CSS keyframes. dash has no `@keyframes` at all, so
   none of §5's three motion patterns appear on it. Standardising on CSS would
