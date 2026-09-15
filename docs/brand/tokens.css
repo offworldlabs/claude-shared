@@ -4,21 +4,23 @@
    A snapshot of the values the existing sites use, gathered into one place so a
    new page can start from them instead of re-deriving colours and fonts by eye.
 
-   This describes what the five surfaces do TODAY, not a target design. Where
+   This describes what the six surfaces do TODAY, not a target design. Where
    the sites disagree (see docs/brand/brand-guide.md §"Improvements, gaps &
    discrepancies") this file keeps the disagreement visible rather than papering
    over it: the shared spine lives in :root, and each surface's own values live
    in a class you add to <body>.
 
    Usage:
-     <body class="retina"> … </body>          // owl | retina | dash | map | owl-os
+     <body class="retina"> … </body>   // owl | retina | dash | data | map | owl-os
+     <body class="dash" data-theme="dark">     // the themed surfaces are one
+     <body class="map" data-theme="light">     // pair; data-theme picks the half
      colour: var(--ink);
      background: var(--canvas);
 
    The token NAMES here are unified (the live sites each use their own naming —
    --ink/--paper on owl, --text/--bg on retina, --bg-primary/--text-primary on
-   dash and the map, --ink/--bg/--line on owl-os). A page built from this file
-   gets one vocabulary across all of them.
+   dash, data and the map, --ink/--bg/--line on owl-os). A page built from this
+   file gets one vocabulary across all of them.
 ============================================================================ */
 
 :root {
@@ -122,16 +124,30 @@
 
 /* ============================================================================
    dash — dash.retina.fm  (the admin console)
-   Utilitarian ops tool: cool slate, brighter blue, system fonts (no brand
+   data — data.retina.fm  (the public archive browser)
+   Utilitarian ops tools: cool slate, brighter blue, system fonts (no brand
    typefaces), dense tables, the full success/warning/error set.
+
+   One declaration for two surfaces because they hold the same values: data was
+   built from dash's token block and the two have not diverged. admin.retina.fm
+   is dash's own bundle behind a role check, so it is covered here too.
+
+   These surfaces default to the OS preference, which a file of classes cannot
+   be handed: the bare class here is the LIGHT HALF, which on the live surfaces
+   is what shows when the OS asks for light or cannot be asked. The dark half
+   below is the map's palette, reached with data-theme="dark".
 ============================================================================ */
-.dash {
+.dash,
+.data {
   --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', monospace;
 
   --canvas:       #f1f5f9;   /* slate-100, cool not warm */
-  --canvas-sunk:  #f8fafc;   /* slate-50 */
+  /* A light canvas is already darker than a card, so a recessed region is made
+     by letting the canvas show through: the sunk tier IS the canvas value here.
+     The dark theme inverts the ramp and needs a colour of its own. */
+  --canvas-sunk:  #f1f5f9;
   --surface:      #ffffff;
 
   --ink:          #0f172a;   /* slate-900 */
@@ -141,6 +157,10 @@
   --accent:        #3b82f6;  /* blue-500, one step lighter than retina at rest */
   --accent-strong: #2563eb;  /* blue-600 hover — matches retina's resting blue */
   --accent-wash:   rgba(59, 130, 246, 0.10);
+  /* Ink for what sits ON the accent, not beside it: a solid accent button, the
+     sidebar mark. A token rather than a literal white because the dark theme's
+     accent is a bright sky blue, on which white is about 1.8:1. */
+  --accent-ink:    #ffffff;   /* dash and data only; the map defines none */
 
   /* Console semantics run one shade off the marketing set (Tailwind-native) */
   --success:      #10b981;   /* emerald-500 */
@@ -163,9 +183,42 @@
   --header-height: 56px;
 }
 
+/* The dark half for both. It is the map's palette, not a set of their own —
+   the .map block below carries the same values — so the estate has one pair of
+   palettes rather than one per surface. On the live surfaces this is what a
+   dark OS gets with no attribute stamped at all; the attribute is for a viewer
+   who has overridden the OS. */
+.dash[data-theme="dark"],
+.data[data-theme="dark"] {
+  --canvas:       #0d1b2a;
+  --canvas-sunk:  #0f2035;
+  --surface:      #132240;
+
+  --ink:          #e2e8f0;
+  --ink-muted:    #94a3b8;
+  --ink-subtle:   #64748b;
+
+  --accent:        #38bdf8;
+  --accent-strong: #7dd3fc;
+  --accent-wash:   rgba(56, 189, 248, 0.16);
+  --accent-ink:    #082f49;   /* near-black: white on sky-blue is ~1.8:1 */
+
+  --success:      #4ade80;
+  --success-wash: rgba(74, 222, 128, 0.15);
+  --warning:      #fbbf24;
+  --warning-wash: rgba(251, 191, 36, 0.15);
+  --danger:       #f43f5e;
+  --danger-wash:  rgba(244, 63, 94, 0.15);
+
+  --border:        rgba(100, 180, 255, 0.14);
+  --border-strong: rgba(100, 180, 255, 0.28);
+}
+
 /* ============================================================================
    map — map.retina.fm  (the live radar console)
-   The only DARK surface, and the only THEMED one. A Flightradar24-style
+   The only surface that is DARK by default, and the only themed one that never
+   consults the OS: its control is a boolean where dash's and data's has a third
+   `system` state. Same dark values as the block above. A Flightradar24-style
    operational map: deep navy chrome, a single Inter UI font (no serif, no
    branded mono), a brighter sky-blue accent plus an amber selection highlight,
    tight small radii, blue-tinted translucent hairlines, opaque panels carrying
@@ -211,9 +264,9 @@
   --border:        rgba(100, 180, 255, 0.14);  /* blue-tinted hairline */
   --border-strong: rgba(100, 180, 255, 0.28);
 
-  --radius:    6px;
-  --radius-sm: 3px;
-  --radius-lg: 10px;
+  --radius:    8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;   /* pills; a scatter of 2–6px literals is left over */
 
   --heading-weight: 700;
 
@@ -232,6 +285,8 @@
    surface is written against these names. */
 .map[data-theme="light"] {
   --canvas:       #f1f5f9;
+  /* NOT dash's value: the map keeps slate-50 here where dash and data use the
+     canvas itself. The one place the two light themes disagree (guide §10). */
   --canvas-sunk:  #f8fafc;
   --surface:      #ffffff;
 

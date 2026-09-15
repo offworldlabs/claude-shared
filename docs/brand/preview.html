@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brand tokens preview — owl / retina / dash / map / owl-os</title>
+<title>Brand tokens preview — owl / retina / the console pair / owl-os</title>
+<!-- Four surfaces, not five. The panels tagged .dash and .map are no longer two
+     surfaces with different looks: they are the LIGHT and DARK halves of one
+     palette pair, and dash, data, admin and the map all draw from it. Which
+     half a viewer meets is a per-surface question, answered in each panel and
+     in guide §3. data.retina.fm holds dash's values exactly and shares its
+     class in tokens.css, so it has no panel of its own either. -->
 
 <!-- Fonts the branded surfaces use (tokens.css sets the families; it does not
      load them). The console uses the system stack, so it needs no link. -->
@@ -18,7 +24,9 @@
   /* Page chrome only. Everything below the .surface panels is driven purely by
      token values, so the columns differ ONLY because the surface class
      differs. If the starter reproduces the look, the columns should feel like
-     owl / retina / dash / map / owl-os without any per-surface CSS here.
+     the live surfaces without any per-surface CSS here. The two panels with an
+     accent rail are one palette in its two halves rather than two surfaces;
+     see the head comment.
      The controls block is the one place this shows the tokens rather than the
      live sites: owl and retina ship no form controls at all (see guide §6). */
   body {
@@ -150,6 +158,16 @@
      shifting layout. See guide §6. */
   .seg-btn.active { background: var(--surface); color: var(--ink);
                     box-shadow: 0 0 0 var(--border-width) var(--border); }
+
+  /* The two halves of the console pair, marked so they do not read as two
+     separate surfaces. Both are drawn from their own tokens like every other
+     panel; only the rail and the kicker are page chrome. */
+  .surface.pair { box-shadow: inset 0 4px 0 var(--accent); }
+  .pair-kicker { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em;
+                 text-transform: uppercase; color: var(--accent); margin-bottom: .4rem; }
+  .pair-note { font-size: .68rem; line-height: 1.5; color: var(--ink-muted);
+               margin: .6rem 0 1.4rem; padding-left: .7rem;
+               border-left: var(--border-width) solid var(--border); }
 
   /* Accent + canvas swatches. */
   .swatches { display: flex; gap: .5rem; margin-top: .9rem; }
@@ -284,10 +302,15 @@
       </div>
     </section>
 
-    <section class="surface dash">
-      <div class="tag">dash.retina.fm · .dash · the console in light</div>
+    <section class="surface dash pair">
+      <div class="pair-kicker">One palette · light half</div>
+      <div class="tag">.dash / .data · dash, data, admin, map</div>
       <h1>Fleet overview</h1>
       <p class="lede">Node health, detections, and network status for logged-in operators.</p>
+      <p class="pair-note">Not a surface of its own. This is the <b>light half</b> of one palette
+        pair; the other panel with an accent rail is the dark half, and the two are the same
+        values inverted. dash, data and admin show this half whenever the OS asks for light, which
+        is what they do by default; the map shows it only when a viewer picks light.</p>
 
       <div class="block">
         <span class="label">Buttons</span>
@@ -344,10 +367,15 @@
       </div>
     </section>
 
-    <section class="surface map">
-      <div class="tag">map.retina.fm · .map · the console in dark</div>
+    <section class="surface map pair">
+      <div class="pair-kicker">One palette · dark half</div>
+      <div class="tag">.map · map, dash, data, admin</div>
       <h1>Live radar</h1>
-      <p class="lede">Tracks, detections and coverage. Dark by default; its light theme is dash's.</p>
+      <p class="lede">Tracks, detections and coverage. Dark by default, and the only themed
+        surface that never asks the OS.</p>
+      <p class="pair-note">The <b>dark half</b> of the same pair. The map opens here on any
+        machine and switches only when asked; dash, data and admin arrive here on their own
+        whenever the OS is set to dark.</p>
 
       <div class="block">
         <span class="label">Buttons</span>
