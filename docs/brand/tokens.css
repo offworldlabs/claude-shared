@@ -396,6 +396,47 @@
   color: var(--ink-subtle);
 }
 
+/* The appearance switch the console-family surfaces share (guide §6): three
+   icon buttons in one role="radiogroup", ordered light → system → dark. The
+   glyph is drawn in currentColor, so setting the ink is what tints it.
+
+   Styling is the easy half. The markup contract is the half that gets dropped:
+   each button needs an aria-label and a matching title (they hold no text), an
+   aria-hidden on the <svg>, a roving tabIndex so the group is one tab stop, and
+   arrow/Home/End handling that moves selection and focus together. Copying the
+   rules below without that ships three unlabelled radios. */
+.theme-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--canvas-sunk);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.theme-switch button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.theme-switch button svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.theme-switch button.active {
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
 /* Reveal-on-scroll. Toggle .is-visible from an IntersectionObserver. */
 .reveal {
   opacity: 0;

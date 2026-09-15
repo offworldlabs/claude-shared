@@ -31,6 +31,13 @@ otherwise (§3). The other three are light only. `admin.retina.fm` is dash's own
 bundle behind a role check rather than a seventh surface, so it themes with it
 and is not listed separately anywhere below.
 
+**A fourth surface runs the pair from outside `retina-server`.** Tower Finder
+(`tower-finder-service/frontend`, the standalone illuminator search) took dash's
+palette, token names and appearance switch wholesale rather than growing a look
+of its own. It has no column in the tables below, and gets no voice of its own
+in §1: it is dash's, on another host. Where §3 and §6 count the themed surfaces
+or describe the switch, it is one of them.
+
 owl-os is the odd repository as well as the odd surface. The UI is authored in
 [`retina-gui`](https://github.com/offworldlabs/retina-gui) but shipped by
 [`owl-os`](https://github.com/offworldlabs/owl-os), which clones it at a pinned
@@ -173,27 +180,33 @@ console's slate ramp (`#94a3b8` / `#64748b` recur), and its hairlines are a
 blue-tinted translucent white rather than a solid grey.
 
 **The map's column above is its dark theme, which is the default there.** These
-are not two palettes but one pair, and three surfaces now run it. The map's
+are not two palettes but one pair, and four surfaces now run it. The map's
 light theme takes dash's values almost wholesale (§10 has the one exception),
-and dash and data carry the same pair with the halves the other way up.
+and dash, data and tower-finder carry the same pair with the halves the other
+way up. tower-finder is the newest of them and the only one outside
+`retina-server`, taking the pair and the control together from dash.
 
-**What decides which half you get is not the same question on the two**, and it
-is the part most easily got wrong. dash and data **follow the OS**: their
-control has three states, and the third, `system`, is the default and the one a
-viewer who has never touched the control is on. It stamps no attribute at all
+**What decides which half you get is not the same question on all four**, and
+it is the part most easily got wrong. dash, data and tower-finder **follow the
+OS**: their control has three states, and the third, `system`, is the default
+and the one a viewer who has never touched the control is on. It stamps no attribute at all
 and lets a `prefers-color-scheme` block answer, so the preference keeps working
 when the OS changes its mind mid-session — where stamping a resolved value
 would pin the surface to whatever the OS happened to be at load. The map
 **never asks the OS**: its control is a boolean, and dark is what a first visit
 gets on a machine set to light.
 
-What all three do share is the cascade rule. A surface puts on its bare selector
+What all four share is the cascade rule. A surface puts on its bare selector
 the half it must be able to paint before any JavaScript runs, and spends
-`data-theme` on the other: dark on the map, light on dash and data. The
+`data-theme` on the other: dark on the map, light on the three consoles. The
 attribute is stamped from JavaScript, so whichever half depends on it is the one
-that can flash the other before first paint. On dash and data the media query is
+that can flash the other before first paint. On the three the media query is
 guarded `:not([data-theme="light"])`, which is what lets an explicit light
-choice beat a dark OS. Everything on all three is written against the custom
+choice beat a dark OS. The cost of the third state is the dark half written
+twice, once per selector, since CSS cannot share a declaration block across a
+media query boundary; dash and tower-finder each guard the two copies against
+drifting with a test rather than with the stylesheet. Everything on all four is
+written against the custom
 properties, so the whole chrome inverts from one block.
 
 Two tokens exist because of that sharing.
@@ -452,6 +465,7 @@ pattern, check it exists on the surface you are building for.
 | Icons | 36px, part-filled | Unicode glyphs | 24px, stroke 2 | 15px inline SVG | inline SVG | 24px, stroke 1.6 |
 | Framework | none | none | none | none | none | Bootstrap 5.3 |
 | Custom properties | yes | yes | yes, themed | yes, themed | yes, themed | yes |
+| Theme control | none | none | `.theme-switch`, 3 states | `.theme-switch`, 3 states | a menu item, 2 states | none |
 | `:focus` styling | none | none | **none** | inputs | whole surface | inputs only |
 
 The two marketing sites have no `<form>`, `<input>`, `<select>`, `<textarea>` or
@@ -587,8 +601,47 @@ with only its border. What is still ad hoc is the playback scrubber, a native
 `input[type=range]` tinted with `accent-color` and otherwise left as the browser
 drew it, and one native checkbox in the owner popover.
 
-Neither dash nor map has a toggle switch, a radio, a date picker or a file input
-anywhere.
+The map has no toggle switch, radio, date picker or file input anywhere, and
+dash's only radio is the appearance switch below.
+
+### Theme control
+
+§3 covers what the switch does to the surface. This is the control itself.
+
+**dash, data and tower-finder run the same object**, `.theme-switch`: three icon
+buttons in one `role="radiogroup"` on a `--bg-sunk` ground behind a hairline,
+`--radius-sm` outside and 3px on each button, over 2px of padding and a 2px gap.
+Each button holds 15px of Feather line art drawn in `currentColor` (sun, monitor,
+moon, on a 24-unit box with a 2-unit round-capped stroke), so setting the ink is
+what tints the glyph; the active one takes `--accent-light` behind `--accent`.
+Ordered **light → system → dark**, which reads as a run from one extreme to the
+other with the neutral between them rather than putting the default first.
+
+- **Names, not glyphs.** The buttons carry no text, so each takes an
+  `aria-label` and the same word as `title`, and the `<svg>` is `aria-hidden` so
+  the name is not read twice. Without that a screen reader meets three
+  unlabelled radios and the control is unusable rather than merely bare.
+- **One tab stop, not three.** Choosing `role="radio"` over three independent
+  toggle buttons is what obliges the radiogroup contract: a roving `tabIndex`
+  puts Tab on whichever option is checked, and Left/Up and Right/Down move the
+  selection *and* the focus, wrapping at both ends, with Home and End going to
+  the ends. Only those keys are `preventDefault`ed; everything else passes
+  through, or the arrows scroll the page while the selection moves underneath.
+- **Placement is the only thing that differs.** dash hangs it in the header's
+  avatar dropdown under an "Appearance" micro-label, and stops the click
+  bubbling there so the menu stays open while the three are compared. data and
+  tower-finder have no signed-in user and so no menu to hang it in, and put it
+  straight in the top bar.
+- **It wants a surface under it, not a canvas.** The ground is `--bg-sunk`,
+  which on the light half of these three *is* the canvas value (§3), so a switch
+  dropped straight onto a page reads as three loose glyphs and only its hairline
+  bounds it. In the header bar or a dropdown, both of which are `--bg-secondary`,
+  the recess reads as intended.
+
+**The map's is a different control**, and predates the others: a
+`role="menuitem"` button in the toolbar's overflow menu reading "Light mode"
+with a `.menu-hint` showing `on` or `off`. Two states, no system, and none of
+the radiogroup's keyboard behaviour. §10 records the divergence.
 
 ### Feedback: loading, empty, validation, errors
 
@@ -908,9 +961,11 @@ filed as work; a snapshot of loose ends rather than a plan.
   pair matches token for token, which is what makes this one look like a
   carry-over rather than a decision. One of the two is wrong; worth settling
   before a component that uses the tier moves between them.
-- **The three themed surfaces do not agree on what picks the theme.** dash and
-  data have three states and default to `system`; the map has two and defaults
-  to dark, never consulting the OS (§3). Defensible on a live operational view
+- **The themed surfaces do not agree on what picks the theme.** dash, data and
+  tower-finder have three states and default to `system`; the map has two and
+  defaults to dark, never consulting the OS (§3). The controls differ as much
+  as the behaviour: three of them are the same `.theme-switch` radiogroup and
+  the map's is a menu item in an overflow menu (§6). Defensible on a live operational view
   that people keep open, and the map is also the only one of the three whose
   data colours are held to a contrast floor per theme, so flipping it is not
   free. But it means one estate answers the same question two ways, and a
