@@ -120,6 +120,26 @@ For the tower-finder edge use `/opt/tower-finder-service` and the service `edge`
 - **The recipient**: DigitalOcean alerts accept up to nine addresses; Cloudflare policies take a
   list. Both must be addresses the platform knows.
 
+## Rotation
+
+The Infrastructure page reads DigitalOcean with a personal access token named
+`retina-admin-infrastructure-ro` (scopes `uptime:read`, `monitoring:read`, `droplet:read`),
+created 2026-09-15 with a one-year expiry, so it stops working on 2027-09-15. Nothing alerts
+when it does: the checks and policies do not use it, and the only symptom is the page listing
+`HTTP 401` under Degraded for every check and droplet. To rotate it:
+
+1. Create a new token with the same three scopes in the DigitalOcean control panel (API,
+   Tokens) while switched to the team that owns the droplets.
+2. Paste it, as the only line, into `~/.secrets/retina/digitalocean-read-token` on the operator's
+   Mac; the file is never committed or read into a chat session.
+3. On each app droplet, copy the file to `/root/.secrets/digitalocean-read-token`, replace the
+   `DIGITALOCEAN_READ_TOKEN=` line in `/opt/retina-server/backend/.env` from it, and
+   `docker compose up -d server`; the page picks the new token up on its next build.
+
+The `doctl` token behind the `retina` context is separate, expires about two months after it is
+made, and is only needed to change or audit this configuration; `doctl auth init --context retina`
+refreshes it.
+
 ## Not covered, on purpose
 
 Page content (a blank page returns 200; the deploy smoke tests own that), `testmap`, `map`,
