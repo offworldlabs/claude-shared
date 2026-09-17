@@ -36,11 +36,11 @@ flowchart TB
   end
 
   subgraph central["Central server — cloud droplet"]
-    tf["retina-server = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + live-map SPA + admin dashboard"]
+    tf["retina-server = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + map, dashboard and data-explorer SPAs"]
     tfs[tower-finder-service · site-survey utility]
   end
 
-  web([Web clients · map / dash / api.retina.fm])
+  web([Web clients · app / admin / api.retina.fm])
   mender([hosted.mender.io · fleet OTA control plane])
 
   illum -->|reflections| blah
@@ -56,8 +56,9 @@ flowchart TB
 - **Central server** — the `retina-server` monorepo (the repo name is historical;
   it is now the full RETINA server). Ingests detections from all nodes, runs
   multi-target tracking and multi-node geolocation, and serves the live maps.
-- **Web clients** — the live map (`map.retina.fm`) and admin dashboard
-  (`dash`/`admin.retina.fm`), served as static SPAs by the central server.
+- **Web clients** — the live map, user dashboard and data explorer, all on
+  `app.retina.fm` at `/`, `/dash/` and `/data/`, plus the admin console on
+  `admin.retina.fm`; served as static SPAs by the central server.
 - **Control plane** — `hosted.mender.io` delivers OS and application updates to
   the fleet over the air; it is deliberately separate from the data plane.
 
@@ -137,12 +138,12 @@ JSONL output is the offline/batch path, not the live feed.
   One container (nginx + uvicorn) hosting: TCP detection ingest (`:3012`), the
   multi-target **tracker** (Kalman + GNN) and node associator, the multi-node
   **geolocator** (Levenberg-Marquardt), auth/admin/analytics, the live-map SPA,
-  and the admin dashboard. Exposes REST `/api/*` and `/ws/aircraft*` WebSocket
-  feeds behind `map`/`dash`/`api`/`testmap.retina.fm`. The tracking, geolocation,
-  and analytics algorithms are **vendored as git submodules under `libs/`**
-  (`retina-tracker`, `retina-geolocator`, `retina-custody`, `retina-simulation`,
-  `retina-analytics`) and pip-installed into the image — those repos run *inside*
-  this server, not as separate services.
+  the dashboard and the data explorer. Exposes REST `/api/*` and `/ws/aircraft*`
+  WebSocket feeds behind `app`/`admin`/`api`/`towers.retina.fm`. The tracking,
+  geolocation, and analytics algorithms are **vendored as git submodules under
+  `libs/`** (`retina-tracker`, `retina-geolocator`, `retina-custody`,
+  `retina-simulation`, `retina-analytics`) and pip-installed into the image —
+  those repos run *inside* this server, not as separate services.
 - **tower-finder-service** (Python FastAPI) — the illuminator site-survey feature
   extracted into a standalone microservice (2026-05-20). Given a lat/lon it ranks
   nearby FM/VHF/UHF broadcast towers as candidate illuminators, querying external
@@ -224,7 +225,8 @@ authoritative inventory — deployment topology changes faster than this table.
 | `api.retina.fm` | Central server REST/API surface |
 | `tower-finder.retina.fm` | `tower-finder-service` (illuminator site-survey) |
 | `towers.retina.fm` | Tower search API (queried by `retina-simulation` for TX coords) |
-| `map.retina.fm`, `dash`/`admin.retina.fm`, `testmap.retina.fm` | Central server live-map / dashboard SPAs |
+| `app.retina.fm` | Central server SPAs: live map at `/`, dashboard at `/dash/`, data explorer at `/data/` |
+| `admin.retina.fm` | Admin console on the central server, gated by Cloudflare Access |
 | `retina.fm` | Deployment / product portal |
 | `offworldlabs.com` | Marketing site (`landing-page-owl`) |
 | `owl.local` / `retina.local` | On-node `retina-gui` management UI (LAN) |
