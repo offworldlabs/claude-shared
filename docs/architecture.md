@@ -139,7 +139,7 @@ JSONL output is the offline/batch path, not the live feed.
   multi-target **tracker** (Kalman + GNN) and node associator, the multi-node
   **geolocator** (Levenberg-Marquardt), auth/admin/analytics, the live-map SPA,
   the dashboard and the data explorer. Exposes REST `/api/*` and `/ws/aircraft*`
-  WebSocket feeds behind `app`/`admin`/`api`/`towers.retina.fm`. The tracking,
+  WebSocket feeds behind `app`/`admin`/`api.retina.fm`. The tracking,
   geolocation, and analytics algorithms are **vendored as git submodules under
   `libs/`** (`retina-tracker`, `retina-geolocator`, `retina-custody`,
   `retina-simulation`, `retina-analytics`) and pip-installed into the image —
@@ -147,9 +147,10 @@ JSONL output is the offline/batch path, not the live feed.
 - **tower-finder-service** (Python FastAPI) — the illuminator site-survey feature
   extracted into a standalone microservice (2026-05-20). Given a lat/lon it ranks
   nearby FM/VHF/UHF broadcast towers as candidate illuminators, querying external
-  databases (Maprad.io, FCC). Fronted by the monorepo's nginx at
-  `tower-finder.retina.fm`. Currently duplicates the tower code still present in
-  the monorepo (deduplication pending).
+  databases (Maprad.io, FCC). The sole implementation of tower ranking. Its own
+  nginx edge serves the API and search SPA at `towers.retina.fm`, and the
+  monorepo's nginx proxies the four tower routes (`/api/towers`, `/api/elevation`,
+  `/api/config`, `/api/geocode`) to it from every vhost that answers `/api/`.
 
 ### Tooling / simulation
 - **retina-tracker** (Python library) — the multi-target tracker (Kalman/GNN). In
@@ -223,8 +224,7 @@ authoritative inventory — deployment topology changes faster than this table.
 | --- | --- |
 | `radar3.retnode.com`, `sfo1.retnode.com` | Real production radar nodes (detection APIs) |
 | `api.retina.fm` | Central server REST/API surface |
-| `tower-finder.retina.fm` | `tower-finder-service` (illuminator site-survey) |
-| `towers.retina.fm` | Tower search API (queried by `retina-simulation` for TX coords) |
+| `towers.retina.fm` | `tower-finder-service` (illuminator site-survey; also queried by `retina-simulation` for TX coords) |
 | `app.retina.fm` | Central server SPAs: live map at `/`, dashboard at `/dash/`, data explorer at `/data/` |
 | `admin.retina.fm` | Admin console on the central server, gated by Cloudflare Access |
 | `retina.fm` | Deployment / product portal |
