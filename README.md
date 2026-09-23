@@ -4,6 +4,7 @@ Offworld Labs' org-wide Claude Code resource: a **plugin marketplace** (`offworl
 plus **shared reference docs** used across every repo in the organisation.
 
 - `plugins/core` — the `core` plugin; its `setup-repo` skill bundles the shared rules, `.claude/settings.json`, `CLAUDE.md`, and CI workflow templates used to scaffold new repos.
+- `plugins/core/skills/ci-status`: reports a pull request's real CI state, where `gh pr checks` and `gh run watch` misreport it.
 - `docs/` — on-demand org-wide reference docs (see [Documentation](#documentation)).
 
 ## Install
