@@ -28,6 +28,9 @@ as a dependency. Apps are uv projects:
 - `uv.lock` is committed and is the only record of what gets installed. There is no
   `requirements.txt`.
 - CI runs `uv sync --locked`, which fails when the lock no longer matches `pyproject.toml`.
+- Where the image pins uv as `ARG UV_VERSION`, CI installs that version, read from the
+  Dockerfile, and fails unless it reads exactly one `x.y.z`: setup-uv takes an empty version as
+  its latest. Locks are written with the same uv (`uv tool run uv@<version> lock`).
 - Images run `uv sync --locked --no-dev` into a virtualenv put first on `PATH`, not into the
   system site-packages: `uv sync` removes whatever the lock does not name, the base image's own
   `pip` included.
@@ -48,11 +51,16 @@ as a dependency. Apps are uv projects:
   and lock again: uv keeps a locked version until told to upgrade it, so the lock ends at the
   deployed versions and the first image built from it matches the running one.
 - The uv that writes a lock and the uv that reads it need not match. A lock written by 0.12.5
-  syncs under 0.9.22.
+  syncs under 0.9.22. Pinning CI to the image's uv therefore buys reproducibility more than
+  compatibility: a uv release cannot change CI without a commit, and one edit to `UV_VERSION`
+  moves CI, image and relock together. Where CI does not build the image, it is also the only
+  check before merge that the image's uv accepts the lock.
 
 ## 4. Adoption
 
 `setup-repo` gains a `python-app` stack that scaffolds §2. Its `python` stack stays as it is and
 remains the scaffold for libraries. retina-server moves first. tower-finder-service,
 retina-telemetry, retina-gui and node-infra's `mender-auto-accept` install with plain pip today
-and move under `123zgec4jn0`.
+and move under `123zgec4jn0`. The scaffold has no Dockerfile, so the CI pin is added with the
+image: tower-finder-service#42's `id: uv` step is the pattern for one job, and retina-server#572
+wraps it in a composite action for several.
