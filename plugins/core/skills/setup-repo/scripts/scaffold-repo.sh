@@ -2,7 +2,7 @@
 # Deterministic file-scaffolding engine for the core:setup-repo skill.
 # Copies bundled assets into a target repo without clobbering existing files.
 # Usage: scaffold-repo.sh <target_dir> <stack>
-#   <stack>: python | ts-frontend | ts-backend | none
+#   <stack>: python | python-app | ts-frontend | ts-backend | none
 set -euo pipefail
 
 TARGET="${1:?target dir required}"
@@ -10,7 +10,7 @@ STACK="${2:-none}"
 ASSETS="$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets" && pwd)"
 
 case "$STACK" in
-  python|ts-frontend|ts-backend|none) ;;
+  python|python-app|ts-frontend|ts-backend|none) ;;
   *) echo "unknown stack: $STACK" >&2; exit 2 ;;
 esac
 
@@ -50,6 +50,13 @@ case "$STACK" in
     copy "$ASSETS/stack/python/gitignore"            "$TARGET/.gitignore"
     copy "$ASSETS/stack/python/tests/.gitkeep"       "$TARGET/tests/.gitkeep"
     copy "$ASSETS/ci/ci-python.yml"                  "$TARGET/.github/workflows/ci.yml"
+    copy "$ASSETS/precommit/python.yaml"             "$TARGET/.pre-commit-config.yaml"
+    ;;
+  python-app)
+    copy "$ASSETS/stack/python-app/pyproject.toml"   "$TARGET/pyproject.toml"
+    copy "$ASSETS/stack/python/gitignore"            "$TARGET/.gitignore"
+    copy "$ASSETS/stack/python/tests/.gitkeep"       "$TARGET/tests/.gitkeep"
+    copy "$ASSETS/ci/ci-python-app.yml"              "$TARGET/.github/workflows/ci.yml"
     copy "$ASSETS/precommit/python.yaml"             "$TARGET/.pre-commit-config.yaml"
     ;;
   ts-frontend)
