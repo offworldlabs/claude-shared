@@ -32,6 +32,28 @@ assert setup_py and setup_py[0]["with"]["python-version"] == "3.12", setup_py
 print("ci-python.yml OK")
 EOF
 
+APP_CI="$ROOT/plugins/core/skills/setup-repo/assets/ci/ci-python-app.yml"
+python3 - "$APP_CI" <<'EOF'
+import sys
+try:
+    import yaml
+except ModuleNotFoundError:
+    print("pyyaml missing; skipping YAML parse"); sys.exit(0)
+doc = yaml.safe_load(open(sys.argv[1]))
+on = doc.get("on", doc.get(True))
+assert on["push"]["branches"] == ["main"] and "pull_request" in on, on
+steps = doc["jobs"]["lint-and-test"]["steps"]
+runs = "\n".join(s.get("run", "") for s in steps)
+assert "uv sync --locked" in runs, runs
+assert "uv run --locked pre-commit run --all-files" in runs, runs
+assert "uv run --locked pytest" in runs, runs
+# the lock is the only record of what gets installed
+assert "uv pip" not in runs and "requirements" not in runs, runs
+uses = [str(s.get("uses", "")) for s in steps]
+assert any(u.startswith("astral-sh/setup-uv") for u in uses), uses
+print("ci-python-app.yml OK")
+EOF
+
 grep -q "root = true" "$EC"
 grep -q "indent_size = 4" "$EC"   # python
 grep -q "indent_size = 2" "$EC"   # js/ts/yaml

@@ -106,4 +106,29 @@ for f in package.json tsconfig.json eslint.config.js vitest.config.ts .gitignore
 done
 grep -q '"react"' "$TMP_TSB/package.json" && { echo "ts-backend should not have react" >&2; exit 1; }
 python3 -c "import json; json.load(open('$TMP_TSB/package.json'))"
+
+# python-app: a uv project with no requirements files, which locks, syncs and
+# passes its tests exactly as scaffolded
+TMP_APP="$(mktemp -d)"
+trap 'rm -rf "$TMP" "$TMP_NONE" "$BOGUS" "$TMP_TSF" "$TMP_TSB" "$TMP_APP"' EXIT
+git -C "$TMP_APP" init -q
+bash "$ENGINE" "$TMP_APP" python-app
+for f in .claude/settings.json CLAUDE.md .editorconfig pyproject.toml .gitignore \
+         tests/.gitkeep .github/workflows/ci.yml .pre-commit-config.yaml; do
+  test -e "$TMP_APP/$f" || { echo "MISSING (python-app): $f" >&2; exit 1; }
+done
+for f in requirements.txt requirements-dev.txt; do
+  if test -e "$TMP_APP/$f"; then echo "UNEXPECTED (python-app): $f" >&2; exit 1; fi
+done
+grep -q 'uv sync --locked' "$TMP_APP/.github/workflows/ci.yml" || { echo "python-app ci is not locked" >&2; exit 1; }
+if command -v uv >/dev/null 2>&1; then
+  mkdir -p "$TMP_APP/src"
+  cp "$TMP/src/example.py" "$TMP_APP/src/example.py"
+  cp "$TMP/tests/test_example.py" "$TMP_APP/tests/test_example.py"
+  ( cd "$TMP_APP" && uv lock -q && uv sync -q --locked && uv run -q --locked pytest -q )
+  echo "python-app uv OK"
+else
+  echo "uv not installed; python-app lock skipped"
+fi
+
 echo "ALL CHECKS PASSED"
