@@ -43,7 +43,7 @@ point at these rather than duplicating them, so there's one source of truth.
 And each subdirectory:
 
 - **`docs/brand/`** — a snapshot of how the surfaces look today (offworldlabs.com,
-  retina.fm, dash.retina.fm, and the dark map.retina.fm): the shared foundations
+  retina.fm, the console at app.retina.fm, and the node's own UI): the shared foundations
   and the per-surface differences, so a new page can match the existing design.
   Ships a `tokens.css` starter alongside the guide. Descriptive, not prescriptive.
 - **`docs/contracts/`** — the source of truth for cross-service interfaces: API

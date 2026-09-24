@@ -1,25 +1,25 @@
 /* ============================================================================
-   Offworld Labs / RETINA — design tokens
+   Offworld Labs / RETINA: design tokens
    ----------------------------------------------------------------------------
    A snapshot of the values the existing sites use, gathered into one place so a
    new page can start from them instead of re-deriving colours and fonts by eye.
 
-   This describes what the six surfaces do TODAY, not a target design. Where
+   This describes what the four surfaces do TODAY, not a target design. Where
    the sites disagree (see docs/brand/brand-guide.md §"Improvements, gaps &
    discrepancies") this file keeps the disagreement visible rather than papering
    over it: the shared spine lives in :root, and each surface's own values live
    in a class you add to <body>.
 
    Usage:
-     <body class="retina"> … </body>   // owl | retina | dash | data | map | owl-os
-     <body class="dash" data-theme="dark">     // the themed surfaces are one
-     <body class="map" data-theme="light">     // pair; data-theme picks the half
+     <body class="retina"> … </body>   // owl | retina | console | owl-os
+     <body class="console" data-theme="dark">  // the console's dark half
+     <body class="console map">                // the map, a page of the console
      colour: var(--ink);
      background: var(--canvas);
 
-   The token NAMES here are unified (the live sites each use their own naming —
+   The token NAMES here are unified (the live sites each use their own naming:
    --ink/--paper on owl, --text/--bg on retina, --bg-primary/--text-primary on
-   dash, data and the map, --ink/--bg/--line on owl-os). A page built from this
+   the console, --ink/--bg/--line on owl-os). A page built from this
    file gets one vocabulary across all of them.
 ============================================================================ */
 
@@ -34,14 +34,14 @@
   --leading:     1.6;
 
   /* — Semantic colours ————————————————————————————————————————————————
-     The marketing surfaces (owl, retina) use these values. The console (dash)
-     shifts to a slate-native set; see the .dash block. Kept as one role each so
+     The marketing surfaces (owl, retina) use these values. The console
+     shifts to a slate-native set; see the .console block. Kept as one role each so
      the radar legend and status pills stay legible across surfaces. */
   --success:      #16a34a;   /* "live", ADS-B truth, healthy */
   --success-wash: rgba(22, 163, 74, 0.10);
   --warning:      #d97706;   /* echo, anomaly, attention */
   --warning-wash: rgba(217, 119, 6, 0.10);
-  --danger:       #dc2626;   /* error/failure (only dash uses it today) */
+  --danger:       #dc2626;   /* error/failure (only the console uses it today) */
   --danger-wash:  rgba(220, 38, 38, 0.10);
 
   /* — Hairlines & shape (per-surface radii below) ————————————————————— */
@@ -56,7 +56,7 @@
 }
 
 /* ============================================================================
-   owl — offworldlabs.com  (the lab / parent)
+   owl · offworldlabs.com  (the lab / parent)
    Editorial restraint: warm paper, muted blue, light-weight serif headings,
    crisp small radii, flat controls.
 ============================================================================ */
@@ -88,7 +88,7 @@
 }
 
 /* ============================================================================
-   retina — retina.fm  (the product)
+   retina · retina.fm  (the product)
    Commercial energy: warm paper, punchy blue, bolder expressive serif, softer
    radii, buttons that lift on hover, one dark section.
 ============================================================================ */
@@ -123,22 +123,18 @@
 }
 
 /* ============================================================================
-   dash — dash.retina.fm  (the admin console)
-   data — data.retina.fm  (the public archive browser)
-   Utilitarian ops tools: cool slate, brighter blue, system fonts (no brand
-   typefaces), dense tables, the full success/warning/error set.
+   console · app.retina.fm  (the console: its pages, the live map, the archive)
+   Utilitarian ops tool: cool slate, brighter blue, system fonts (no brand
+   typefaces), dense tables, the full success/warning/error set. One bundle on
+   one origin; admin.retina.fm is the same bundle with the admin route table, so
+   it is covered here too.
 
-   One declaration for two surfaces because they hold the same values: data was
-   built from dash's token block and the two have not diverged. admin.retina.fm
-   is dash's own bundle behind a role check, so it is covered here too.
-
-   These surfaces default to the OS preference, which a file of classes cannot
-   be handed: the bare class here is the LIGHT HALF, which on the live surfaces
-   is what shows when the OS asks for light or cannot be asked. The dark half
-   below is the map's palette, reached with data-theme="dark".
+   The live console defaults to the OS preference, which a file of classes
+   cannot be handed: the bare class here is the LIGHT HALF, which on the live
+   surface is what shows when the OS asks for light or cannot be asked. The
+   dark half follows, reached with data-theme="dark".
 ============================================================================ */
-.dash,
-.data {
+.console {
   --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', monospace;
@@ -146,7 +142,7 @@
   --canvas:       #f1f5f9;   /* slate-100, cool not warm */
   /* A light canvas is already darker than a card, so a recessed region is made
      by letting the canvas show through: the sunk tier IS the canvas value here.
-     The dark theme inverts the ramp and needs a colour of its own. */
+     The dark half inverts the ramp and needs a colour of its own. */
   --canvas-sunk:  #f1f5f9;
   --surface:      #ffffff;
 
@@ -155,12 +151,15 @@
   --ink-subtle:   #94a3b8;   /* slate-400 */
 
   --accent:        #3b82f6;  /* blue-500, one step lighter than retina at rest */
-  --accent-strong: #2563eb;  /* blue-600 hover — matches retina's resting blue */
+  --accent-strong: #2563eb;  /* blue-600 hover, matching retina's resting blue */
   --accent-wash:   rgba(59, 130, 246, 0.10);
+  /* The wash at hover strength, below --accent-wash so a hovered row and a
+     selected one stay apart. The console is the only surface with two. */
+  --accent-tint:   rgba(59, 130, 246, 0.05);
   /* Ink for what sits ON the accent, not beside it: a solid accent button, the
-     sidebar mark. A token rather than a literal white because the dark theme's
-     accent is a bright sky blue, on which white is about 1.8:1. */
-  --accent-ink:    #ffffff;   /* dash and data only; the map defines none */
+     sidebar mark. A token rather than a literal white because the dark half's
+     accent is a bright sky blue, on which white is about 2.1:1. */
+  --accent-ink:    #ffffff;
 
   /* Console semantics run one shade off the marketing set (Tailwind-native) */
   --success:      #10b981;   /* emerald-500 */
@@ -175,7 +174,7 @@
 
   --radius:    8px;
   --radius-sm: 4px;
-  --radius-lg: 12px;
+  --radius-lg: 12px;         /* a literal on the live surface: pills, the sign-in card */
 
   --heading-weight: 700;
 
@@ -183,13 +182,11 @@
   --header-height: 56px;
 }
 
-/* The dark half for both. It is the map's palette, not a set of their own —
-   the .map block below carries the same values — so the estate has one pair of
-   palettes rather than one per surface. On the live surfaces this is what a
-   dark OS gets with no attribute stamped at all; the attribute is for a viewer
-   who has overridden the OS. */
-.dash[data-theme="dark"],
-.data[data-theme="dark"] {
+/* The dark half. On the live surface this is what a dark OS gets with no
+   attribute stamped at all; the attribute is for a viewer who has overridden
+   the OS. Navy chrome, a brighter sky-blue accent, blue-tinted translucent
+   hairlines, and semantics brightened a step so they carry on navy. */
+.console[data-theme="dark"] {
   --canvas:       #0d1b2a;
   --canvas-sunk:  #0f2035;
   --surface:      #132240;
@@ -201,7 +198,8 @@
   --accent:        #38bdf8;
   --accent-strong: #7dd3fc;
   --accent-wash:   rgba(56, 189, 248, 0.16);
-  --accent-ink:    #082f49;   /* near-black: white on sky-blue is ~1.8:1 */
+  --accent-tint:   rgba(56, 189, 248, 0.07);
+  --accent-ink:    #082f49;   /* near-black: white on sky blue is ~2.1:1 */
 
   --success:      #4ade80;
   --success-wash: rgba(74, 222, 128, 0.15);
@@ -215,112 +213,44 @@
 }
 
 /* ============================================================================
-   map — map.retina.fm  (the live radar console)
-   The only surface that is DARK by default, and the only themed one that never
-   consults the OS: its control is a boolean where dash's and data's has a third
-   `system` state. Same dark values as the block above. A Flightradar24-style
-   operational map: deep navy chrome, a single Inter UI font (no serif, no
-   branded mono), a brighter sky-blue accent plus an amber selection highlight,
-   tight small radii, blue-tinted translucent hairlines, opaque panels carrying
-   a shadow over the moving basemap.
-
-   Because the canvas is dark and the ink is light, --btn-primary (ink on
-   canvas) reads as a light button on dark — the inverse of the other three.
-
-   The light theme follows in its own block. Dark is on the class and light on
-   the attribute, matching the live surface: the attribute is stamped from
-   JavaScript, so whichever theme depends on it is the one that can flash the
-   other before first paint, and that must not be the default.
+   map · app.retina.fm/map  (the live picture, a page of the console)
+   Add beside .console: <body class="console map">. The map wears the console's
+   palette in whichever half the console resolves to, so this carries only what
+   the map adds. A Flightradar24-style operational view: opaque panels carrying
+   a shadow over the moving basemap, and an amber selection highlight.
 ============================================================================ */
-.map {
-  --font-display: 'Inter', system-ui, sans-serif;   /* no serif here */
-  --font-body:    'Inter', system-ui, sans-serif;
-  --font-mono:    ui-monospace, monospace;           /* generic; hex badges only */
-
-  --canvas:       #0d1b2a;   /* app / map root */
-  --canvas-sunk:  #0f2035;   /* left sidebar */
-  --surface:      #132240;   /* toolbar / panel body */
-
-  --ink:          #e2e8f0;   /* light slate */
-  --ink-muted:    #94a3b8;
-  --ink-subtle:   #64748b;
-
-  --accent:        #38bdf8;  /* brighter sky-blue than the other surfaces */
-  --accent-strong: #7dd3fc;  /* light-sky, for badges/hovers */
-  --accent-wash:   rgba(56, 189, 248, 0.16);
-  /* The wash at hover strength, below --accent-wash so a hovered row and a
-     selected one stay apart. The map is the only surface with two. */
-  --accent-tint:   rgba(56, 189, 248, 0.07);
-  --accent-select: #fbbf24;  /* amber — selected aircraft / focus glow */
-
-  /* Dark-surface semantics (brighter so they carry on navy) */
-  --success:      #4ade80;
-  --success-wash: rgba(74, 222, 128, 0.15);
-  --warning:      #fbbf24;
-  --warning-wash: rgba(251, 191, 36, 0.15);
-  --danger:       #f43f5e;
-  --danger-wash:  rgba(244, 63, 94, 0.15);
-
-  --border:        rgba(100, 180, 255, 0.14);  /* blue-tinted hairline */
-  --border-strong: rgba(100, 180, 255, 0.28);
-
-  --radius:    8px;
-  --radius-sm: 4px;
-  --radius-lg: 12px;   /* pills; a scatter of 2–6px literals is left over */
-
-  --heading-weight: 700;
-
-  /* Data-viz colours are NOT UI chrome and live in the map code, but the two a
-     legend or overlay might reuse. Truth is the ADS-B fix the solves are
-     measured against rather than one more track, so it wears no hue: it sits at
-     the neutral extreme, furthest along the ink ramp from the canvas. A
-     simulated target flying without a transponder is grey beside it. Radar
-     detections run a Doppler gradient rather than a single colour. */
-  --data-truth:      #f8fafc;   /* ADS-B ground truth */
-  --data-truth-dark: #94a3b8;   /* target flying without a transponder */
-}
-
-/* The map's light theme. dash's chrome values throughout, over Carto Positron
-   tiles instead of Voyager; only the values change, since everything on the
-   surface is written against these names. */
-.map[data-theme="light"] {
-  --canvas:       #f1f5f9;
-  /* NOT dash's value: the map keeps slate-50 here where dash and data use the
-     canvas itself. The one place the two light themes disagree (guide §10). */
-  --canvas-sunk:  #f8fafc;
-  --surface:      #ffffff;
-
-  --ink:          #0f172a;
-  --ink-muted:    #475569;
-  --ink-subtle:   #94a3b8;
-
-  --accent:        #3b82f6;
-  --accent-strong: #2563eb;
-  --accent-wash:   rgba(59, 130, 246, 0.10);
-  --accent-tint:   rgba(59, 130, 246, 0.05);
+.console.map {
+  /* Lighter than the canvas, not equal to it: the recessed pane sits against
+     panels that already float (guide §3). */
+  --canvas-sunk:   #f8fafc;
   --accent-select: #d97706;  /* amber-600, to carry on a near-white basemap */
 
-  --success:      #10b981;
-  --success-wash: rgba(16, 185, 129, 0.10);
-  --warning:      #f59e0b;
-  --warning-wash: rgba(245, 158, 11, 0.10);
-  --danger:       #ef4444;
-  --danger-wash:  rgba(239, 68, 68, 0.10);
+  /* Data-viz colours are NOT UI chrome and live in the map code, but these are
+     the two a legend or overlay might reuse. Truth is the ADS-B fix the solves
+     are measured against rather than one more track, drawn only on a synthetic
+     fleet's view, so it wears no lane hue: it sits at the neutral extreme,
+     furthest along the ink ramp from the canvas. A simulated target flying
+     without a transponder is grey beside it. Radar detections run a Doppler
+     gradient rather than a single colour. */
+  --data-truth:      #1e293b;   /* ADS-B ground truth */
+  --data-truth-dark: #64748b;   /* target flying without a transponder */
+}
 
-  --border:        #e2e8f0;
-  --border-strong: #cbd5e1;
+.console.map[data-theme="dark"] {
+  --canvas-sunk:   #0f2035;   /* the dark half's own, restated over the rule above */
+  --accent-select: #fbbf24;   /* amber-400 */
 
-  --data-truth:      #1e293b;
-  --data-truth-dark: #64748b;
+  --data-truth:      #f8fafc;
+  --data-truth-dark: #94a3b8;
 }
 
 /* ============================================================================
-   owl-os — owl.local / ret<node_id>.retnode.com  (the node's own web UI)
+   owl-os · owl.local / ret<node_id>.retnode.com  (the node's own web UI)
    The surface baked into the owl-os image and served off the node itself: a
    setup wizard, a config page, and a fleet summary. One app on one port under
    every name the node has, on the LAN and over the tunnel alike, so retnode.com
    needs no separate block here.
-   Nearest to dash in job but not in look: near-white warm paper, Inter plus
+   Nearest to the console in job but not in look: near-white warm paper, Inter plus
    JetBrains Mono, generous radii, ink-filled primary buttons with the blue
    kept for accents and focus rings.
 
@@ -365,7 +295,7 @@
 
   --heading-weight: 600;
 
-  /* Elevation is real here, unlike the other four: cards rest on a hairline
+  /* Elevation is real here, unlike the other three: cards rest on a hairline
      shadow and lift on hover. */
   --shadow-sm:  0 1px 0 oklch(0.20 0.012 260 / 0.04), 0 1px 2px oklch(0.20 0.012 260 / 0.04);
   --shadow-md:  0 1px 0 oklch(0.20 0.012 260 / 0.04), 0 6px 24px oklch(0.20 0.012 260 / 0.06);
@@ -396,7 +326,7 @@
   color: var(--ink-subtle);
 }
 
-/* The appearance switch the console-family surfaces share (guide §6): three
+/* The appearance switch the console and tower-finder share (guide §6): three
    icon buttons in one role="radiogroup", ordered light → system → dark. The
    glyph is drawn in currentColor, so setting the ink is what tints it.
 
