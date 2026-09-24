@@ -29,6 +29,7 @@ flowchart TB
     subgraph stack["retina-node docker-compose stack"]
       blah[blah2 · C++ SDR DSP → detections]
       a2d[adsb2dd · truth]
+      trkn[retina-tracker · sidecar]
       tar[tar1090 · ADS-B]
       gui[retina-gui · node mgmt UI]
       spec[retina-spectrum · illuminator survey]
@@ -153,11 +154,14 @@ JSONL output is the offline/batch path, not the live feed.
   `/api/config`, `/api/geocode`) to it from every vhost that answers `/api/`.
 
 ### Tooling / simulation
-- **retina-tracker** (Python library) — the multi-target tracker (Kalman/GNN). In
-  production it is **not deployed standalone**: the central server vendors it as a
-  `libs/retina-tracker` git submodule and imports it directly (e.g.
-  `frame_processor`, `passive_radar`). Its own Dockerfile (a TCP service on
-  `:30100`) is used only by `retina-tracker`'s integration-test compose.
+- **retina-tracker** (Python library) — the multi-target tracker (Kalman/GNN). It
+  runs in two places. Every node runs it as a sidecar (retina-node's compose), fed
+  by blah2_api on loopback `:30100`. The central server vendors it as a
+  `libs/retina-tracker` git submodule and runs one instance per node in-process
+  (`passive_radar`), and that copy is what feeds the solver. Node API 1.6.0 lets a
+  node send its sidecar's tracks on the detection frame, and retina-server can use
+  them in place of its own copy (`NODE_TRACKS_MODE`, off everywhere until the fleet
+  cuts over).
 - **retina-geolocator** (Python library) — LM delay/Doppler → lat/lon/alt/velocity
   solver (single- and multi-node). No network service; vendored into the central
   server as a `libs/` git submodule and also usable as a pip-installed batch tool
@@ -242,7 +246,7 @@ authoritative inventory — deployment topology changes faster than this table.
 | `retina-gui` | Node management UI | Python/Flask |
 | `retina-server` | Central RETINA server (ingest, track, geolocate, maps) | Python/FastAPI, React/Vite |
 | `tower-finder-service` | Illuminator site-survey microservice | Python/FastAPI |
-| `retina-tracker` | Multi-target tracker (Kalman/GNN) — library vendored into central server | Python |
+| `retina-tracker` | Multi-target tracker (Kalman/GNN) — library vendored into central server, and a sidecar on every node | Python |
 | `retina-geolocator` | LM delay/Doppler → position solver — library vendored into central server | Python |
 | `retina-custody` | Node identity + signature/hash-chain custody — library vendored into central server | Python |
 | `retina-analytics` | Inter-node association + node reputation/trust — library vendored into central server | Python |
