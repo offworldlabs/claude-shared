@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brand tokens preview — owl / retina / the console pair / owl-os</title>
-<!-- Four surfaces, not five. The panels tagged .dash and .map are no longer two
-     surfaces with different looks: they are the LIGHT and DARK halves of one
-     palette pair, and dash, data, admin and the map all draw from it. Which
-     half a viewer meets is a per-surface question, answered in each panel and
-     in guide §3. data.retina.fm holds dash's values exactly and shares its
-     class in tokens.css, so it has no panel of its own either. -->
+<title>Brand tokens preview: owl, retina, console, owl-os</title>
+<!-- Four surfaces, five panels. The two panels with an accent rail are the
+     LIGHT and DARK halves of the console's one palette pair, not two surfaces:
+     every console page, the map and the data explorer draw from it, and which
+     half a viewer meets is the viewer's choice or the OS's (guide §3). The dark
+     panel adds the map modifier, whose selection amber is its last swatch. -->
 
 <!-- Fonts the branded surfaces use (tokens.css sets the families; it does not
      load them). The console uses the system stack, so it needs no link. -->
@@ -81,7 +80,8 @@
     padding: .6rem 1.1rem; border-radius: var(--radius);
   }
   .btn-primary { background: var(--ink); color: var(--canvas); }
-  .btn-accent  { background: var(--accent); color: #fff; }
+  /* Only the console defines --accent-ink; white is the fallback elsewhere. */
+  .btn-accent  { background: var(--accent); color: var(--accent-ink, #fff); }
   .btn-outline { background: transparent; color: var(--ink); border-color: var(--border-strong); }
 
   /* Card — border + radius + surface all come from tokens. */
@@ -118,10 +118,11 @@
   .pill.err  { background: var(--danger-wash);  color: var(--danger); }
   .pill.err  .dot { background: var(--danger); }
 
-  /* Form controls. Only dash, map and owl-os ship these; the block is rendered
-     on all five so the tokens can be compared, and the owl/retina columns label
-     it as tokens-only. Knob and active-segment fills use --canvas rather than
-     --surface so they stay legible when the surface inverts (map). */
+  /* Form controls. Only the console and owl-os ship these; the block is
+     rendered on all five panels so the tokens can be compared, and the
+     owl/retina columns label it as tokens-only. Knob and active-segment fills
+     use --canvas rather than --surface so they stay legible when the surface
+     inverts (the console's dark half). */
   .field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .85rem; }
   .field-label { font-size: .8rem; font-weight: 500; color: var(--ink-muted); }
   .field-help  { font-size: .75rem; color: var(--ink-subtle); }
@@ -173,9 +174,10 @@
   .swatches { display: flex; gap: .5rem; margin-top: .9rem; }
   .sw { flex: 1; height: 46px; border-radius: var(--radius-sm); border: var(--border-width) solid var(--border);
         font-family: var(--font-mono); font-size: .55rem; color: var(--ink-subtle); padding: .3rem; }
-  .sw.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .sw.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); }
   .sw.wash   { background: var(--accent-wash); }
   .sw.sunk   { background: var(--canvas-sunk); }
+  .sw.select { background: var(--accent-select); border-color: var(--accent-select); color: var(--canvas); }
 </style>
 </head>
 <body>
@@ -302,15 +304,15 @@
       </div>
     </section>
 
-    <section class="surface dash pair">
+    <section class="surface console pair">
       <div class="pair-kicker">One palette · light half</div>
-      <div class="tag">.dash / .data · dash, data, admin, map</div>
+      <div class="tag">.console · app.retina.fm, admin</div>
       <h1>Fleet overview</h1>
-      <p class="lede">Node health, detections, and network status for logged-in operators.</p>
-      <p class="pair-note">Not a surface of its own. This is the <b>light half</b> of one palette
-        pair; the other panel with an accent rail is the dark half, and the two are the same
-        values inverted. dash, data and admin show this half whenever the OS asks for light, which
-        is what they do by default; the map shows it only when a viewer picks light.</p>
+      <p class="lede">Node health, detections, and network status for signed-in owners and operators.</p>
+      <p class="pair-note">The <b>light half</b> of the console's one palette pair; the other
+        panel with an accent rail is the dark half, and the two are the same values inverted.
+        Every console page shows this half whenever the OS asks for light, which is what it does
+        by default, and the map with them.</p>
 
       <div class="block">
         <span class="label">Buttons</span>
@@ -346,7 +348,7 @@
         <div class="field">
           <label class="field-label">Name</label>
           <input class="input" value="node-atl-03" readonly>
-          <span class="field-help">Styled inline per page today.</span>
+          <span class="field-help">One shared rule, .input.</span>
         </div>
         <div class="field">
           <label class="field-label">Band</label>
@@ -367,15 +369,15 @@
       </div>
     </section>
 
-    <section class="surface map pair">
+    <section class="surface console map pair" data-theme="dark">
       <div class="pair-kicker">One palette · dark half</div>
-      <div class="tag">.map · map, dash, data, admin</div>
+      <div class="tag">.console.map · data-theme="dark"</div>
       <h1>Live radar</h1>
-      <p class="lede">Tracks, detections and coverage. Dark by default, and the only themed
-        surface that never asks the OS.</p>
-      <p class="pair-note">The <b>dark half</b> of the same pair. The map opens here on any
-        machine and switches only when asked; dash, data and admin arrive here on their own
-        whenever the OS is set to dark.</p>
+      <p class="lede">Tracks, detections and coverage, in whichever half the console is
+        wearing.</p>
+      <p class="pair-note">The <b>dark half</b> of the same pair. The console, the map
+        included, arrives here on its own whenever the OS is set to dark, or when a viewer
+        picks it.</p>
 
       <div class="block">
         <span class="label">Buttons</span>
@@ -411,7 +413,7 @@
         <div class="field">
           <label class="field-label">Name</label>
           <input class="input" value="UAL2456" readonly>
-          <span class="field-help">Styled once, in the token layer.</span>
+          <span class="field-help">The map's own rule, matching the console's.</span>
         </div>
         <div class="field">
           <label class="field-label">Band</label>
@@ -427,8 +429,8 @@
       </div>
 
       <div class="block">
-        <span class="label">Accent · wash · sunk</span>
-        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div></div>
+        <span class="label">Accent · wash · sunk · select</span>
+        <div class="swatches"><div class="sw accent">accent</div><div class="sw wash">wash</div><div class="sw sunk">sunk</div><div class="sw select">select</div></div>
       </div>
     </section>
 
