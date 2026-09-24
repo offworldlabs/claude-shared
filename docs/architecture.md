@@ -37,7 +37,7 @@ flowchart TB
   end
 
   subgraph central["Central server — cloud droplet"]
-    tf["retina-server = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + map, dashboard and data-explorer SPAs"]
+    tf["retina-server = the RETINA server<br/>FastAPI: TCP ingest + tracker + geolocator + analytics<br/>nginx + the console SPA"]
     tfs[tower-finder-service · site-survey utility]
   end
 
@@ -57,9 +57,10 @@ flowchart TB
 - **Central server** — the `retina-server` monorepo (the repo name is historical;
   it is now the full RETINA server). Ingests detections from all nodes, runs
   multi-target tracking and multi-node geolocation, and serves the live maps.
-- **Web clients** — the live map, user dashboard and data explorer, all on
-  `app.retina.fm` at `/`, `/dash/` and `/data/`, plus the admin console on
-  `admin.retina.fm`; served as static SPAs by the central server.
+- **Web clients** — the console, one SPA on `app.retina.fm` holding the live map
+  at `/map` (where `/` lands), the data explorer at `/data` and the node owner's
+  pages, plus the same bundle with the admin route table on `admin.retina.fm`;
+  served as static files by the central server.
 - **Control plane** — `hosted.mender.io` delivers OS and application updates to
   the fleet over the air; it is deliberately separate from the data plane.
 
@@ -81,7 +82,7 @@ flowchart LR
     geo --> state[in-memory track state]
   end
 
-  state -->|/ws/aircraft* WebSocket| map[live map SPA]
+  state -->|/ws/aircraft* WebSocket| map[console map page]
 ```
 
 **Caveat — the node→central forward is config-gated.** The "forwarded over TCP to
@@ -108,8 +109,8 @@ synthetic-node handling.
 not via a file or tar1090's `aircraft.json`. Geolocation runs in-process
 (`_run_geolocation()` during frame processing, updating an in-memory geolocated-
 aircraft store in `backend/core/state.py`), and that state is broadcast over the
-`/ws/aircraft*` WebSocket endpoints (`backend/routes/streaming.py`) to the live-map
-SPA (`frontend/src/components/map/hooks.ts`). The standalone `retina-geolocator`'s
+`/ws/aircraft*` WebSocket endpoints (`backend/routes/streaming.py`) to the console's
+map page (`dashboard/src/pages/map/hooks.ts`). The standalone `retina-geolocator`'s
 JSONL output is the offline/batch path, not the live feed.
 
 ## 3. Component catalogue
@@ -138,8 +139,8 @@ JSONL output is the offline/batch path, not the live feed.
 - **retina-server** (Python FastAPI + React/Vite SPAs) — the RETINA central server.
   One container (nginx + uvicorn) hosting: TCP detection ingest (`:3012`), the
   multi-target **tracker** (Kalman + GNN) and node associator, the multi-node
-  **geolocator** (Levenberg-Marquardt), auth/admin/analytics, the live-map SPA,
-  the dashboard and the data explorer. Exposes REST `/api/*` and `/ws/aircraft*`
+  **geolocator** (Levenberg-Marquardt), auth/admin/analytics, and the console SPA
+  (the live map, the node owner's pages and the data explorer). Exposes REST `/api/*` and `/ws/aircraft*`
   WebSocket feeds behind `app`/`admin`/`api.retina.fm`. The tracking,
   geolocation, and analytics algorithms are **vendored as git submodules under
   `libs/`** (`retina-tracker`, `retina-geolocator`, `retina-custody`,
@@ -229,7 +230,7 @@ authoritative inventory — deployment topology changes faster than this table.
 | `radar3.retnode.com`, `sfo1.retnode.com` | Real production radar nodes (detection APIs) |
 | `api.retina.fm` | Central server REST/API surface |
 | `towers.retina.fm` | `tower-finder-service` (illuminator site-survey; also queried by `retina-simulation` for TX coords) |
-| `app.retina.fm` | Central server SPAs: live map at `/`, dashboard at `/dash/`, data explorer at `/data/` |
+| `app.retina.fm` | The console SPA on the central server: live map at `/map` (where `/` lands), data explorer at `/data`, node owner's pages at the root |
 | `admin.retina.fm` | Admin console on the central server, gated by Cloudflare Access |
 | `retina.fm` | Deployment / product portal |
 | `offworldlabs.com` | Marketing site (`landing-page-owl`) |
