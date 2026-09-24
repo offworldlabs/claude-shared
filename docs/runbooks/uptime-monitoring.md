@@ -142,8 +142,9 @@ refreshes it.
 
 ## Not covered, on purpose
 
-Page content (a blank page returns 200; the deploy smoke tests own that), `testmap`, `map`,
-`dash`, `data`, `admin` and the `test-*` names (same stacks as the four probed), latency and
+Page content (a blank page returns 200; the deploy smoke tests own that), `app`, `admin` and
+the `test-*` names (same stacks as the four probed), the retired `map`, `dash` and `data` names
+(Cloudflare redirects onto `app`), latency and
 certificate alerts on the checks (Cloudflare's edge certificate is Cloudflare's to renew, and an
 expired origin certificate trips the down check as a 526), and any heartbeat service. The
 Mender auto-accept timer on the Mender droplet has no HTTP surface and is not watched.
