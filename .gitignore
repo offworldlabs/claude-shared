@@ -1,3 +1,6 @@
 # Superpowers planning artifacts and subagent-driven-development scratch
 docs/superpowers/
 .superpowers/
+
+# Bytecode from running the Python skills and their tests
+__pycache__/
